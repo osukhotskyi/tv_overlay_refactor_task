@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 
-const _deviceChannel = MethodChannel('tv_overlay_refactor_task/device');
+import '../../domain/entities/device_info.dart';
 
-typedef DeviceInfo = ({bool isTv, bool isEmulator});
+const _deviceChannel = MethodChannel('tv_overlay_refactor_task/device');
 
 Future<DeviceInfo> loadDeviceInfo() async {
   final result = await _deviceChannel.invokeMapMethod<String, bool>(
