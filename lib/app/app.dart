@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../domain/entities/device_info.dart';
 import '../presentation/common/device_gate.dart';
 import '../presentation/common/unsupported_device_screen.dart';
 import '../presentation/player/view/player_screen.dart';
@@ -19,8 +21,12 @@ class TvOverlayRefactorApp extends StatelessWidget {
         load: loadDeviceInfo,
         loading: const ColoredBox(color: Colors.black),
         unsupported: const UnsupportedDeviceScreen(),
-        builder: (_, info) =>
-            PlayerScreen(source: sampleVideo, isEmulator: info.isEmulator),
+        // Device info is ambient: it describes the environment rather than
+        // this screen, so it is provided once instead of being passed down.
+        builder: (_, info) => RepositoryProvider<DeviceInfo>.value(
+          value: info,
+          child: const PlayerScreen(source: sampleVideo),
+        ),
       ),
     );
   }

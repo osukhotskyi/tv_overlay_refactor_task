@@ -2,31 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../../domain/entities/device_info.dart';
 import '../../../domain/entities/video_source.dart';
 import '../../tv_overlay/view/tv_overlay_old.dart';
 import '../bloc/player_bloc.dart';
 
 /// Owns the [PlayerBloc] for the film it is given.
 class PlayerScreen extends StatelessWidget {
-  const PlayerScreen({
-    required this.source,
-    required this.isEmulator,
-    super.key,
-  });
+  const PlayerScreen({required this.source, super.key});
 
   final VideoSource source;
-
-  // TODO(refactor): a rendering detail of the playback service, not of the
-  // screen. Disappears once the service is injected instead of constructed
-  // inside the bloc.
-  final bool isEmulator;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          PlayerBloc(source: source, isEmulator: isEmulator)
-            ..add(const PlayerStarted()),
+      create: (context) => PlayerBloc(
+        source: source,
+        // Read here rather than inside the bloc: a bloc has no BuildContext,
+        // and pulling dependencies from an ambient store would hide them from
+        // its constructor and from tests.
+        //
+        // TODO(refactor): the emulator flag is a detail of how video is
+        // rendered. It leaves this file once PlayerBloc receives a ready
+        // playback service instead of building one itself.
+        isEmulator: context.read<DeviceInfo>().isEmulator,
+      )..add(const PlayerStarted()),
       child: const PlayerView(),
     );
   }
