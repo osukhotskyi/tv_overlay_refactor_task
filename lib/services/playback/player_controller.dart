@@ -1,70 +1,14 @@
 import 'dart:async';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
-class PlayerValue extends Equatable {
-  const PlayerValue({
-    this.position = Duration.zero,
-    this.duration,
-    this.isPlaying = false,
-    this.isLoading = true,
-    this.initialized = false,
-    this.showOverlay = false,
-    this.sliderValue = 0,
-    this.errorDescription,
-    this.aspectRatio = 16 / 9,
-  });
+import '../../domain/entities/player_value.dart';
 
-  final Duration position;
-  final Duration? duration;
-  final bool isPlaying;
-  final bool isLoading;
-  final bool initialized;
-  final bool showOverlay;
-  final double sliderValue;
-  final String? errorDescription;
-  final double aspectRatio;
-
-  PlayerValue copyWith({
-    Duration? position,
-    Duration? duration,
-    bool? isPlaying,
-    bool? isLoading,
-    bool? initialized,
-    bool? showOverlay,
-    double? sliderValue,
-    String? errorDescription,
-    double? aspectRatio,
-  }) {
-    return PlayerValue(
-      position: position ?? this.position,
-      duration: duration ?? this.duration,
-      isPlaying: isPlaying ?? this.isPlaying,
-      isLoading: isLoading ?? this.isLoading,
-      initialized: initialized ?? this.initialized,
-      showOverlay: showOverlay ?? this.showOverlay,
-      sliderValue: sliderValue ?? this.sliderValue,
-      errorDescription: errorDescription ?? this.errorDescription,
-      aspectRatio: aspectRatio ?? this.aspectRatio,
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-    position,
-    duration,
-    isPlaying,
-    isLoading,
-    initialized,
-    showOverlay,
-    sliderValue,
-    errorDescription,
-    aspectRatio,
-  ];
-}
+// Re-exported so the presentation layer keeps compiling while files are being
+// moved; direct imports of the entity are introduced in the next step.
+export '../../domain/entities/player_value.dart';
 
 class PlayerController extends ValueNotifier<PlayerValue> {
   PlayerController(this.url, {required bool isEmulator})

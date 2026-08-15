@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../player/player_controller.dart';
+import '../../core/utils/duration_format.dart';
+import '../../services/playback/player_controller.dart';
+
+// Re-exported so widgets importing this file keep seeing formatDuration.
+export '../../core/utils/duration_format.dart';
 
 extension TvKeyEventX on KeyEvent {
   bool get up => logicalKey == LogicalKeyboardKey.arrowUp;
@@ -297,15 +301,4 @@ class PlayerProgressBar extends StatelessWidget {
       ],
     );
   }
-}
-
-String formatDuration(Duration duration) {
-  final hours = duration.inHours;
-  final minutes = duration.inMinutes.remainder(60);
-  final seconds = duration.inSeconds.remainder(60);
-  final value =
-      '${minutes.toString().padLeft(2, '0')}:'
-      '${seconds.toString().padLeft(2, '0')}';
-
-  return hours == 0 ? value : '${hours.toString().padLeft(2, '0')}:$value';
 }

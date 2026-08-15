@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../player/player_bloc.dart';
-import 'widgets.dart';
+import '../../player/bloc/player_bloc.dart';
+import '../../common/widgets.dart';
 
 class TvBottomOverlay extends StatelessWidget {
   const TvBottomOverlay({required this.nodes, super.key});

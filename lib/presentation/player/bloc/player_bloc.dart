@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'player_controller.dart';
+import '../../../services/playback/player_controller.dart';
 
 part 'player_event.dart';
 part 'player_state.dart';

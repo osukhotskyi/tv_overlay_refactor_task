@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../player/player_bloc.dart';
-import '../player/player_controller.dart';
-import 'tv_bottom_overlay.dart';
-import 'widgets.dart';
+import '../../player/bloc/player_bloc.dart';
+import '../../../services/playback/player_controller.dart';
+import '../widgets/tv_bottom_overlay.dart';
+import '../../common/widgets.dart';
 
 class TvOverlayOld extends StatefulWidget {
   const TvOverlayOld({super.key});
