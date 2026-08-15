@@ -13,20 +13,17 @@ class PlayerButton extends StatelessWidget {
     required this.onPressed,
     required this.child,
     this.focusNode,
-    this.autofocus = false,
     super.key,
   });
 
   final VoidCallback onPressed;
   final Widget child;
   final FocusNode? focusNode;
-  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     return FocusWrapper(
       focusNode: focusNode,
-      autofocus: autofocus,
       onTap: onPressed,
       builder: (_, hasFocus, _) =>
           PlayerFocusDecoration(hasFocus: hasFocus, child: child),

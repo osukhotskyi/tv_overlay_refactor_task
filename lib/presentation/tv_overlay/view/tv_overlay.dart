@@ -13,6 +13,9 @@ import '../widgets/tv_bottom_overlay.dart';
 const _introStart = Duration(seconds: 10);
 const _introEnd = Duration(seconds: 20);
 
+/// How long the panels take to slide in and out.
+const _panelAnimation = Duration(milliseconds: 200);
+
 class TvOverlay extends StatefulWidget {
   const TvOverlay({super.key});
 
@@ -108,11 +111,16 @@ class _TvOverlayState extends State<TvOverlay> {
     );
   }
 
-  bool get _showSkipIntro =>
-      _value.position >= _introStart &&
-      _value.position < _introEnd &&
-      _value.sliderValue != 0 &&
-      _value.initialized;
+  bool get _showSkipIntro {
+    final duration = _value.duration;
+    return _value.initialized &&
+        // The old code checked `sliderValue != 0` for this, which only
+        // happened to mean "the duration is known".
+        duration != null &&
+        duration > Duration.zero &&
+        _value.position >= _introStart &&
+        _value.position < _introEnd;
+  }
 }
 
 /// Dims the video while the controls are up, and whenever playback is paused.
@@ -147,7 +155,7 @@ class _TopBar extends StatelessWidget {
           previous.value.isPlaying != current.value.isPlaying ||
           previous.contentName != current.contentName,
       builder: (context, state) => AnimatedPositioned(
-        duration: const Duration(milliseconds: 200),
+        duration: _panelAnimation,
         left: 32,
         right: 32,
         top: visible || !state.value.isPlaying ? 32 : -80,
@@ -188,7 +196,7 @@ class _Controls extends StatelessWidget {
       buildWhen: (previous, current) =>
           previous.value.isPlaying != current.value.isPlaying,
       builder: (context, state) => AnimatedPositioned(
-        duration: const Duration(milliseconds: 200),
+        duration: _panelAnimation,
         left: 32,
         right: 32,
         bottom: visible || !state.value.isPlaying ? 24 : -140,

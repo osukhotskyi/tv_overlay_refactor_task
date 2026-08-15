@@ -26,7 +26,6 @@ class TvBottomOverlay extends StatelessWidget {
                     previous.value.isPlaying != current.value.isPlaying,
                 builder: (context, state) => PlayerButton(
                   focusNode: focus.playPause,
-                  autofocus: true,
                   onPressed: () => context.read<PlayerBloc>().add(
                     const PlayerPlayPauseToggled(),
                   ),

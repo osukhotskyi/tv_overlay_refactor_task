@@ -7,7 +7,6 @@ class PlayerValue extends Equatable {
     this.isPlaying = false,
     this.isLoading = true,
     this.initialized = false,
-    this.sliderValue = 0,
     this.errorDescription,
     this.aspectRatio = 16 / 9,
   });
@@ -17,7 +16,6 @@ class PlayerValue extends Equatable {
   final bool isPlaying;
   final bool isLoading;
   final bool initialized;
-  final double sliderValue;
   final String? errorDescription;
   final double aspectRatio;
 
@@ -27,7 +25,6 @@ class PlayerValue extends Equatable {
     bool? isPlaying,
     bool? isLoading,
     bool? initialized,
-    double? sliderValue,
     String? errorDescription,
     double? aspectRatio,
   }) {
@@ -37,7 +34,6 @@ class PlayerValue extends Equatable {
       isPlaying: isPlaying ?? this.isPlaying,
       isLoading: isLoading ?? this.isLoading,
       initialized: initialized ?? this.initialized,
-      sliderValue: sliderValue ?? this.sliderValue,
       errorDescription: errorDescription ?? this.errorDescription,
       aspectRatio: aspectRatio ?? this.aspectRatio,
     );
@@ -50,7 +46,6 @@ class PlayerValue extends Equatable {
     isPlaying,
     isLoading,
     initialized,
-    sliderValue,
     errorDescription,
     aspectRatio,
   ];

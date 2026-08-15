@@ -97,15 +97,7 @@ class MediaKitPlaybackService implements PlaybackService {
     final nextPosition = position ?? _value.position;
     final nextDuration = duration ?? _value.duration;
 
-    _emit(
-      _value.copyWith(
-        position: nextPosition,
-        duration: nextDuration,
-        sliderValue: nextDuration == null || nextDuration.inMilliseconds == 0
-            ? 0
-            : nextPosition.inMilliseconds / nextDuration.inMilliseconds,
-      ),
-    );
+    _emit(_value.copyWith(position: nextPosition, duration: nextDuration));
   }
 
   void _updateAspectRatio() {

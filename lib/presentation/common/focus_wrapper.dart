@@ -11,7 +11,6 @@ class FocusWrapper extends StatefulWidget {
     required this.onTap,
     required this.builder,
     this.focusNode,
-    this.autofocus = false,
     this.debugLabel,
     super.key,
   });
@@ -21,7 +20,6 @@ class FocusWrapper extends StatefulWidget {
   /// Supply a node when something outside needs to move focus here; otherwise
   /// the widget creates and owns one.
   final FocusNode? focusNode;
-  final bool autofocus;
   final String? debugLabel;
   final Widget Function(BuildContext context, bool hasFocus, Widget? child)
   builder;
@@ -54,7 +52,6 @@ class _FocusWrapperState extends State<FocusWrapper> {
   Widget build(BuildContext context) {
     return Focus(
       focusNode: _node,
-      autofocus: widget.autofocus,
       onKeyEvent: (_, event) {
         if (!_isSubmit(event)) return KeyEventResult.ignored;
         widget.onTap();
