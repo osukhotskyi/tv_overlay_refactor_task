@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/entities/player_value.dart';
-import '../../common/widgets.dart';
+import '../../common/player_button.dart';
 import '../../player/bloc/player_bloc.dart';
 import '../cubit/overlay_visibility_cubit.dart';
 import '../focus/overlay_focus_controller.dart';
@@ -221,8 +221,8 @@ class _SkipIntroButton extends StatelessWidget {
         child: Positioned(
           left: 32,
           bottom: visible ? 140 : 50,
-          child: DefaultPlayerButton(
-            node: node,
+          child: PlayerLabeledButton(
+            focusNode: node,
             title: 'Skip intro',
             icon: Icons.skip_next,
             onTap: onTap,

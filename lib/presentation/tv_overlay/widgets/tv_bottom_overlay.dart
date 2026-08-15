@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../common/widgets.dart';
+import '../../common/player_button.dart';
 import '../../player/bloc/player_bloc.dart';
 import '../cubit/overlay_visibility_cubit.dart';
 import '../focus/overlay_focus_controller.dart';
+import 'overlay_progress_bar.dart';
 
 class TvBottomOverlay extends StatelessWidget {
   const TvBottomOverlay({required this.focus, super.key});
@@ -23,37 +24,29 @@ class TvBottomOverlay extends StatelessWidget {
               BlocBuilder<PlayerBloc, PlayerState>(
                 buildWhen: (previous, current) =>
                     previous.value.isPlaying != current.value.isPlaying,
-                builder: (context, state) {
-                  return FocusWrapper(
-                    focusNode: focus.playPause,
-                    autofocus: true,
-                    onTap: () => context.read<PlayerBloc>().add(
-                      const PlayerPlayPauseToggled(),
+                builder: (context, state) => PlayerButton(
+                  focusNode: focus.playPause,
+                  autofocus: true,
+                  onPressed: () => context.read<PlayerBloc>().add(
+                    const PlayerPlayPauseToggled(),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Icon(
+                      state.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                      size: 30,
                     ),
-                    builder: (context, hasFocus, child) =>
-                        PlayerFocusDecoration(
-                          hasFocus: hasFocus,
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Icon(
-                              state.value.isPlaying
-                                  ? Icons.pause
-                                  : Icons.play_arrow,
-                              size: 30,
-                            ),
-                          ),
-                        ),
-                  );
-                },
+                  ),
+                ),
               ),
               const Spacer(),
-              DefaultPlayerButton(
+              PlayerLabeledButton(
                 title: 'Audio and subtitles',
                 icon: Icons.subtitles,
                 onTap: () => _showDialog(context, 'Audio and subtitles'),
               ),
               const SizedBox(width: 16),
-              DefaultPlayerButton(
+              PlayerLabeledButton(
                 title: 'Settings',
                 icon: Icons.settings,
                 onTap: () => _showDialog(context, 'Settings'),
@@ -66,7 +59,7 @@ class TvBottomOverlay extends StatelessWidget {
           buildWhen: (previous, current) =>
               previous.value.position != current.value.position ||
               previous.value.duration != current.value.duration,
-          builder: (context, state) => FramePlayerProgressBar(
+          builder: (context, state) => OverlayProgressBar(
             position: state.value.position,
             duration: state.value.duration ?? Duration.zero,
             node: focus.progress,
