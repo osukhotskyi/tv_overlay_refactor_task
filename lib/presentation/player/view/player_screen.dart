@@ -63,39 +63,53 @@ class PlayerView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: BlocBuilder<PlayerBloc, PlayerState>(
-        builder: (context, state) {
-          final error = state.value.errorDescription;
-          if (error != null) {
-            return Center(child: Text(error));
-          }
+      // A selector, not a plain builder: position ticks change the state
+      // several times a second, and this branch cares about three slow
+      // fields only. Without it the whole body would rebuild every tick,
+      // kept in check solely by `const TvOverlay()` canonicalisation.
+      body:
+          BlocSelector<
+            PlayerBloc,
+            PlayerState,
+            ({String? error, bool initialized, double aspectRatio})
+          >(
+            selector: (state) => (
+              error: state.value.errorDescription,
+              initialized: state.value.initialized,
+              aspectRatio: state.value.aspectRatio,
+            ),
+            builder: (context, data) {
+              final error = data.error;
+              if (error != null) {
+                return Center(child: Text(error));
+              }
 
-          if (!state.value.initialized) {
-            return const Center(child: CircularProgressIndicator());
-          }
+              if (!data.initialized) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              Center(
-                child: AspectRatio(
-                  aspectRatio: state.value.aspectRatio,
-                  child: videoSurface,
-                ),
-              ),
-              BlocProvider(
-                create: (context) {
-                  final player = context.read<PlayerBloc>();
-                  return OverlayVisibilityCubit(
-                    isPlaying: () => player.state.value.isPlaying,
-                  );
-                },
-                child: const TvOverlay(),
-              ),
-            ],
-          );
-        },
-      ),
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Center(
+                    child: AspectRatio(
+                      aspectRatio: data.aspectRatio,
+                      child: videoSurface,
+                    ),
+                  ),
+                  BlocProvider(
+                    create: (context) {
+                      final player = context.read<PlayerBloc>();
+                      return OverlayVisibilityCubit(
+                        isPlaying: () => player.state.value.isPlaying,
+                      );
+                    },
+                    child: const TvOverlay(),
+                  ),
+                ],
+              );
+            },
+          ),
     );
   }
 }

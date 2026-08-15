@@ -29,9 +29,13 @@ class OverlayVisibilityCubit extends Cubit<bool> {
 
   Timer? _hideTimer;
 
-  /// Call on any remote key press or tap: the overlay comes back and the
-  /// countdown starts over.
+  /// Call on any remote key press, auto-repeats included: the overlay comes
+  /// back and the countdown starts over.
   void notifyUserActivity() {
+    // A caller may outlive this cubit — a dialog closing after the player
+    // subtree is gone. Activity on a closed cubit is a no-op, not a
+    // StateError from emit or from a freshly scheduled timer.
+    if (isClosed) return;
     // Guarded rather than relying on Cubit's duplicate-state filter: that
     // filter lets the very first emit through even when the value is
     // unchanged, which would rebuild the overlay for nothing.

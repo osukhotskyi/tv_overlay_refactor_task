@@ -7,6 +7,9 @@ import '../../common/player_focus_decoration.dart';
 /// How far one left/right press jumps.
 const _seekStep = Duration(seconds: 15);
 
+/// Tabular figures keep the labels from changing width as digits tick over.
+const _timeStyle = TextStyle(fontFeatures: [FontFeature.tabularFigures()]);
+
 /// The seek bar of the overlay: a focus scope wearing the standard highlight.
 ///
 /// Listens to its own node, so the highlight updates the moment focus moves
@@ -108,7 +111,7 @@ class _Bar extends StatelessWidget {
 
     return Row(
       children: [
-        Text(formatDuration(position)),
+        Text(formatDuration(position), style: _timeStyle),
         const SizedBox(width: 16),
         Expanded(
           child: LinearProgressIndicator(
@@ -119,7 +122,7 @@ class _Bar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        Text(formatDuration(duration)),
+        Text(formatDuration(duration), style: _timeStyle),
       ],
     );
   }

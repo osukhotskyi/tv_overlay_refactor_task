@@ -30,8 +30,6 @@ class _TvOverlayState extends State<TvOverlay> {
 
   late final OverlayFocusController _focus = OverlayFocusController(
     isSkipIntroVisible: () => _showSkipIntro,
-    isOverlayVisible: () => _overlay.state,
-    isPlaying: () => _value.isPlaying,
   );
 
   PlayerValue get _value => _bloc.state.value;
@@ -49,9 +47,10 @@ class _TvOverlayState extends State<TvOverlay> {
   }
 
   bool _onAnyKey(KeyEvent event) {
-    if (event is KeyDownEvent && !_overlay.isClosed) {
-      _overlay.notifyUserActivity();
-    }
+    // Auto-repeats while a button is held are activity too — otherwise the
+    // overlay hides mid-interaction after five seconds of holding a key.
+    // Only the release is not. The cubit itself ignores calls after close.
+    if (event is! KeyUpEvent) _overlay.notifyUserActivity();
     return false; // Never consume: this only observes.
   }
 
@@ -98,7 +97,6 @@ class _TvOverlayState extends State<TvOverlay> {
               _SkipIntroButton(
                 visible: visible,
                 focus: _focus,
-                isOnScreen: () => _showSkipIntro,
                 onTap: () => _bloc.add(const PlayerSeeked(_introEnd)),
               ),
               const _BufferingIndicator(),
@@ -109,16 +107,22 @@ class _TvOverlayState extends State<TvOverlay> {
     );
   }
 
-  bool get _showSkipIntro {
-    final duration = _value.duration;
-    return _value.initialized &&
-        // The old code checked `sliderValue != 0` for this, which only
-        // happened to mean "the duration is known".
-        duration != null &&
-        duration > Duration.zero &&
-        _value.position >= _introStart &&
-        _value.position < _introEnd;
-  }
+  bool get _showSkipIntro => _isInsideIntroWindow(_value);
+}
+
+/// Whether `Skip intro` is on screen for [value].
+///
+/// Free-standing so the button's `BlocSelector` can compute it from the state
+/// it is handed instead of reaching around it into a captured bloc.
+bool _isInsideIntroWindow(PlayerValue value) {
+  final duration = value.duration;
+  return value.initialized &&
+      // The old code checked `sliderValue != 0` for this, which only
+      // happened to mean "the duration is known".
+      duration != null &&
+      duration > Duration.zero &&
+      value.position >= _introStart &&
+      value.position < _introEnd;
 }
 
 /// Dims the video while the controls are up, and whenever playback is paused.
@@ -230,13 +234,11 @@ class _SkipIntroButton extends StatelessWidget {
   const _SkipIntroButton({
     required this.visible,
     required this.focus,
-    required this.isOnScreen,
     required this.onTap,
   });
 
   final bool visible;
   final OverlayFocusController focus;
-  final ValueGetter<bool> isOnScreen;
   final VoidCallback onTap;
 
   /// High enough to clear the controls panel while it is on screen.
@@ -248,10 +250,10 @@ class _SkipIntroButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<PlayerBloc, PlayerState, bool>(
-      // The getter already reads the current state, and selecting the flag
-      // rather than the position means one rebuild when the button appears
-      // instead of one on every tick while it is on screen.
-      selector: (_) => isOnScreen(),
+      // Selecting the on-screen flag rather than the position means one
+      // rebuild when the button appears, not one per tick — and computing it
+      // from the given state keeps the selector honest.
+      selector: (state) => _isInsideIntroWindow(state.value),
       builder: (context, onScreen) => Visibility(
         visible: onScreen,
         child: Positioned(

@@ -40,7 +40,7 @@ class FocusWrapper extends StatefulWidget {
 
 class _FocusWrapperState extends State<FocusWrapper> {
   FocusNode? _owned;
-  late final FocusNode _node =
+  late FocusNode _node =
       widget.focusNode ?? (_owned = FocusNode(debugLabel: widget.debugLabel));
 
   void _rebuild() => setState(() {});
@@ -49,6 +49,20 @@ class _FocusWrapperState extends State<FocusWrapper> {
   void initState() {
     super.initState();
     _node.addListener(_rebuild);
+  }
+
+  @override
+  void didUpdateWidget(FocusWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A swapped-in external node (or its removal) must take the listener
+    // along, or the highlight keeps following the old node. An owned node is
+    // kept for reuse and released in dispose.
+    final next =
+        widget.focusNode ??
+        (_owned ??= FocusNode(debugLabel: widget.debugLabel));
+    if (identical(next, _node)) return;
+    _node.removeListener(_rebuild);
+    _node = next..addListener(_rebuild);
   }
 
   @override

@@ -14,16 +14,10 @@ import 'package:flutter/widgets.dart';
 /// attach, so the two handlers below are handed to those widgets instead of
 /// being installed on the nodes.
 class OverlayFocusController {
-  OverlayFocusController({
-    required this.isSkipIntroVisible,
-    required this.isOverlayVisible,
-    required this.isPlaying,
-  });
+  OverlayFocusController({required this.isSkipIntroVisible});
 
   /// Asked when a key arrives, so the answer is never stale.
   final ValueGetter<bool> isSkipIntroVisible;
-  final ValueGetter<bool> isOverlayVisible;
-  final ValueGetter<bool> isPlaying;
 
   final FocusNode back = FocusNode(debugLabel: 'overlay.back');
 
@@ -56,24 +50,30 @@ class OverlayFocusController {
   }
 
   /// Directional keys for the back button. Pass to its `onDirectionalKey`.
+  ///
+  /// Only arrows are claimed — repeats included, so a held key cannot slip
+  /// past into geometric traversal: down routes below, the rest die here so
+  /// the top bar does not hand focus sideways. Everything else — notably the
+  /// remote's system Back — is left to the platform.
   KeyEventResult onBackKey(KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-
-    // While the controls are hidden the first press only brings them back.
-    if (!isOverlayVisible() && isPlaying()) return KeyEventResult.ignored;
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
 
     if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
       focusBelowTopBar();
       return KeyEventResult.handled;
     }
-    // Swallow the rest so the top bar does not hand focus sideways.
-    return KeyEventResult.handled;
+    if (event.logicalKey == LogicalKeyboardKey.arrowUp ||
+        event.logicalKey == LogicalKeyboardKey.arrowLeft ||
+        event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   /// Directional keys for the intro button. Pass to its `onDirectionalKey`.
   KeyEventResult onSkipIntroKey(KeyEvent event) {
-    if (event is KeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.arrowUp) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
       back.requestFocus();
       return KeyEventResult.handled;
     }

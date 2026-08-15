@@ -123,4 +123,32 @@ void main() {
       async.elapse(hideDelay * 2);
     });
   });
+
+  test('activity after close is a no-op, not a StateError', () {
+    fakeAsync((async) {
+      final cubit = OverlayVisibilityCubit(isPlaying: () => true);
+      async.elapse(hideDelay);
+      expect(cubit.state, isFalse);
+
+      cubit.close();
+      // A dialog callback can fire after the player subtree is gone; the
+      // unguarded version would emit(true) on the closed cubit and throw.
+      cubit.notifyUserActivity();
+
+      expect(cubit.state, isFalse);
+    });
+  });
+
+  test('activity after close does not schedule a new timer', () {
+    fakeAsync((async) {
+      final cubit = OverlayVisibilityCubit(isPlaying: () => true)..close();
+
+      cubit.notifyUserActivity();
+      // The unguarded version rescheduled: five seconds later the timer
+      // would emit on the closed cubit and throw from the timer zone.
+      async.elapse(hideDelay * 2);
+
+      expect(cubit.state, isTrue);
+    });
+  });
 }
