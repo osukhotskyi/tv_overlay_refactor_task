@@ -5,66 +5,85 @@ import 'package:tv_overlay_refactor_task/presentation/player/view/player_screen.
 
 import '../../../fakes/fake_playback_service.dart';
 
+const _surfaceKey = Key('video-surface');
+
 void main() {
   const source = VideoSource(url: 'https://example.test/a.m3u8', title: 'Film');
 
-  testWidgets('releases the playback service when it goes away', (
-    tester,
-  ) async {
+  Future<FakePlaybackService> pumpPlayer(WidgetTester tester) async {
     final playback = FakePlaybackService();
-
     await tester.pumpWidget(
       MaterialApp(
         home: PlayerScreen(
           source: source,
           createPlayback: (_) =>
-              (service: playback, surface: const SizedBox.shrink()),
+              (service: playback, surface: const SizedBox(key: _surfaceKey)),
         ),
       ),
     );
+    return playback;
+  }
+
+  Future<void> unmount(WidgetTester tester) =>
+      tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+
+  testWidgets('releases the playback service when it goes away', (
+    tester,
+  ) async {
+    final playback = await pumpPlayer(tester);
 
     expect(playback.calls, isNot(contains('dispose')));
 
     // The screen leaves the tree, as it would on Back.
-    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    await unmount(tester);
 
     expect(playback.calls, contains('dispose'));
   });
 
   testWidgets('starts playback as soon as it is shown', (tester) async {
-    final playback = FakePlaybackService();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: PlayerScreen(
-          source: source,
-          createPlayback: (_) =>
-              (service: playback, surface: const SizedBox.shrink()),
-        ),
-      ),
-    );
+    final playback = await pumpPlayer(tester);
     await tester.pump();
 
     expect(playback.calls.take(2), ['initialize', 'play']);
 
-    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    await unmount(tester);
   });
 
-  testWidgets('shows a spinner until the player is ready', (tester) async {
-    final playback = FakePlaybackService();
+  testWidgets('swaps the spinner for the video once the player is ready', (
+    tester,
+  ) async {
+    await pumpPlayer(tester);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: PlayerScreen(
-          source: source,
-          createPlayback: (_) =>
-              (service: playback, surface: const SizedBox.shrink()),
-        ),
-      ),
-    );
-
+    // First frame: nothing reported yet.
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byKey(_surfaceKey), findsNothing);
 
-    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    // Let the fake's reports flow through the bloc and rebuild.
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byKey(_surfaceKey), findsOneWidget);
+
+    await unmount(tester);
+  });
+
+  testWidgets('shows the error text instead of the player', (tester) async {
+    final playback = await pumpPlayer(tester);
+    await tester.pump();
+    await tester.pump();
+
+    playback.report(
+      playback.value.copyWith(errorDescription: 'demuxer: failed'),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('demuxer: failed'), findsOneWidget);
+    expect(find.byKey(_surfaceKey), findsNothing);
+    // The error screen must not leave the sound running behind it.
+    expect(playback.calls, contains('pause'));
+
+    await unmount(tester);
   });
 }
