@@ -11,7 +11,7 @@ class FakePlaybackService implements PlaybackService {
   /// Every call made on this service, in order.
   final calls = <String>[];
 
-  PlayerValue _value = const PlayerValue();
+  PlayerValue _value = const PlayerValue.initial();
 
   @override
   PlayerValue get value => _value;

@@ -18,7 +18,12 @@ part 'player_state.dart';
 class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   PlayerBloc({required VideoSource source, required PlaybackService playback})
     : _playback = playback,
-      super(PlayerState(contentName: source.title)) {
+      super(
+        PlayerState(
+          contentName: source.title,
+          value: const PlayerValue.initial(),
+        ),
+      ) {
     on<PlayerStarted>(_onStarted);
     on<PlayerValueChanged>(_onValueChanged);
     on<PlayerPlayPauseToggled>(_onPlayPauseToggled);

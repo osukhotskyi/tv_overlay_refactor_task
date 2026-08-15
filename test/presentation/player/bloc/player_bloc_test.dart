@@ -26,7 +26,7 @@ void main() {
   });
 
   test('starts with defaults rather than nulls', () {
-    expect(bloc.state.value, const PlayerValue());
+    expect(bloc.state.value, const PlayerValue.initial());
     expect(bloc.state.value.initialized, isFalse);
   });
 
@@ -40,7 +40,11 @@ void main() {
   });
 
   test('reports from the service reach the state', () async {
-    playback.report(const PlayerValue(position: Duration(seconds: 42)));
+    playback.report(
+      const PlayerValue.initial().copyWith(
+        position: const Duration(seconds: 42),
+      ),
+    );
     await pumpEventQueue();
 
     expect(bloc.state.value.position, const Duration(seconds: 42));
@@ -74,7 +78,11 @@ void main() {
   });
 
   test('seeking backwards past the start is left to the service', () async {
-    playback.report(const PlayerValue(position: Duration(seconds: 5)));
+    playback.report(
+      const PlayerValue.initial().copyWith(
+        position: const Duration(seconds: 5),
+      ),
+    );
     await pumpEventQueue();
 
     bloc.add(const PlayerSeekedBy(Duration(seconds: -15)));
@@ -101,7 +109,11 @@ void main() {
 
   test('stops listening once closed', () async {
     await bloc.close();
-    playback.report(const PlayerValue(position: Duration(seconds: 99)));
+    playback.report(
+      const PlayerValue.initial().copyWith(
+        position: const Duration(seconds: 99),
+      ),
+    );
     await pumpEventQueue();
 
     // Would throw "Cannot emit new states after calling close" if the

@@ -52,7 +52,7 @@ class MediaKitPlaybackService implements PlaybackService {
   final StreamController<PlayerValue> _changes =
       StreamController<PlayerValue>.broadcast();
 
-  PlayerValue _value = const PlayerValue();
+  PlayerValue _value = const PlayerValue.initial();
   int? _width;
   int? _height;
 
