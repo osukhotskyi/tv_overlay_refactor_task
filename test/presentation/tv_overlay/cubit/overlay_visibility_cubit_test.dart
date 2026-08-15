@@ -124,6 +124,22 @@ void main() {
     });
   });
 
+  test('suspendAutoHide freezes the countdown until the next activity', () {
+    fakeAsync((async) {
+      final cubit = OverlayVisibilityCubit(isPlaying: () => true);
+
+      cubit.suspendAutoHide();
+      async.elapse(hideDelay * 3);
+      expect(cubit.state, isTrue, reason: 'a dialog owns the screen');
+
+      cubit.notifyUserActivity();
+      async.elapse(hideDelay);
+      expect(cubit.state, isFalse, reason: 'closing the dialog resumes');
+
+      cubit.close();
+    });
+  });
+
   test('activity after close is a no-op, not a StateError', () {
     fakeAsync((async) {
       final cubit = OverlayVisibilityCubit(isPlaying: () => true);

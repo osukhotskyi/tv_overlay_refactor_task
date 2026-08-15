@@ -43,6 +43,17 @@ class OverlayVisibilityCubit extends Cubit<bool> {
     _scheduleHide();
   }
 
+  /// Freezes the countdown while a dialog owns the screen.
+  ///
+  /// The overlay stays exactly as it is — normally visible, behind the
+  /// barrier — so a hide cannot yank focus around underneath the dialog.
+  /// Whoever closes the dialog calls [notifyUserActivity], which restarts
+  /// the countdown.
+  void suspendAutoHide() {
+    if (isClosed) return;
+    _hideTimer?.cancel();
+  }
+
   void _scheduleHide() {
     _hideTimer?.cancel();
     _hideTimer = Timer(hideDelay, () {

@@ -22,7 +22,17 @@ class MediaKitPlaybackService implements PlaybackService {
           : const VideoControllerConfiguration(),
     );
     _subscriptions.addAll([
-      player.stream.position.listen((position) => _update(position: position)),
+      player.stream.position.listen((position) {
+        // The player has caught up with the last seek; from here the live
+        // position is trustworthy again. The tolerance is well under the
+        // seek step, so a stale pre-seek tick cannot clear the target.
+        final target = _inFlightSeekTarget;
+        if (target != null &&
+            (position - target).abs() < _seekSettleTolerance) {
+          _inFlightSeekTarget = null;
+        }
+        _update(position: position);
+      }),
       player.stream.duration.listen((duration) => _update(duration: duration)),
       player.stream.playing.listen(
         (playing) => _emit(_value.copyWith(isPlaying: playing)),
@@ -74,11 +84,26 @@ class MediaKitPlaybackService implements PlaybackService {
   @override
   Future<void> pause() => player.pause();
 
-  @override
-  Future<void> seekTo(Duration position) => player.seek(_clamp(position));
+  static const _seekSettleTolerance = Duration(seconds: 2);
+
+  /// The target of a seek the player has not caught up with yet.
+  ///
+  /// `_value.position` lags behind seeks — the stream reports with a delay —
+  /// so a burst of [seekBy] calls would all start from the same stale
+  /// position and the jumps would not add up. Composing on the pending
+  /// target keeps `+15, +15` meaning `+30`.
+  Duration? _inFlightSeekTarget;
 
   @override
-  Future<void> seekBy(Duration offset) => seekTo(_value.position + offset);
+  Future<void> seekTo(Duration position) {
+    final target = _clamp(position);
+    _inFlightSeekTarget = target;
+    return player.seek(target);
+  }
+
+  @override
+  Future<void> seekBy(Duration offset) =>
+      seekTo((_inFlightSeekTarget ?? _value.position) + offset);
 
   Duration _clamp(Duration position) {
     if (position < Duration.zero) return Duration.zero;

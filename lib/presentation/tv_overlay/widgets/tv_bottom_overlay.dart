@@ -76,7 +76,9 @@ class TvBottomOverlay extends StatelessWidget {
   }
 
   Future<void> _showDialog(BuildContext context, String title) async {
-    final overlay = context.read<OverlayVisibilityCubit>();
+    // Freeze the countdown for the dialog's lifetime: a hide while the
+    // dialog is up would yank focus to Skip intro behind the barrier.
+    final overlay = context.read<OverlayVisibilityCubit>()..suspendAutoHide();
 
     await showDialog<void>(
       context: context,

@@ -11,6 +11,9 @@ class FakePlaybackService implements PlaybackService {
   /// Every call made on this service, in order.
   final calls = <String>[];
 
+  /// When set, [initialize] throws instead of succeeding.
+  Object? initializeError;
+
   PlayerValue _value = const PlayerValue.initial();
 
   @override
@@ -28,6 +31,8 @@ class FakePlaybackService implements PlaybackService {
   @override
   Future<void> initialize() async {
     calls.add('initialize');
+    final error = initializeError;
+    if (error != null) throw error;
     report(_value.copyWith(initialized: true, isLoading: false));
   }
 

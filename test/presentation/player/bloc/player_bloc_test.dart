@@ -101,6 +101,34 @@ void main() {
     expect(bloc.state.value.position, const Duration(seconds: 20));
   });
 
+  test(
+    'a failed start surfaces the error instead of spinning forever',
+    () async {
+      playback.initializeError = Exception('no network');
+
+      bloc.add(const PlayerStarted());
+      await pumpEventQueue();
+
+      expect(bloc.state.value.errorDescription, contains('no network'));
+    },
+  );
+
+  test('pauses playback when the player reports an error', () async {
+    bloc.add(const PlayerStarted());
+    await pumpEventQueue();
+    playback.calls.clear();
+
+    playback.report(
+      bloc.state.value.copyWith(errorDescription: 'demuxer: failed'),
+    );
+    await pumpEventQueue();
+
+    expect(bloc.state.value.errorDescription, 'demuxer: failed');
+    // The error screen replaces the video; sound must not keep going
+    // behind it.
+    expect(playback.calls, contains('pause'));
+  });
+
   test('does not own the service: closing the bloc leaves it alive', () async {
     await bloc.close();
 

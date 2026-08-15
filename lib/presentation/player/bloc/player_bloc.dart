@@ -42,13 +42,31 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     PlayerStarted event,
     Emitter<PlayerState> emit,
   ) async {
-    await _playback.initialize();
-    await _playback.play();
-    emit(state.copyWith(value: _playback.value));
+    try {
+      await _playback.initialize();
+      await _playback.play();
+      emit(state.copyWith(value: _playback.value));
+    } catch (error) {
+      // The service only reports errors its player noticed; a throw out of
+      // open/play would otherwise leave the spinner up forever.
+      emit(
+        state.copyWith(
+          value: _playback.value.copyWith(errorDescription: '$error'),
+        ),
+      );
+    }
   }
 
   void _onValueChanged(PlayerValueChanged event, Emitter<PlayerState> emit) {
+    final isNewError =
+        state.value.errorDescription == null &&
+        event.value.errorDescription != null;
     emit(state.copyWith(value: event.value));
+    if (isNewError) {
+      // The error screen replaces the video surface; without this the sound
+      // keeps playing behind it.
+      _playback.pause();
+    }
   }
 
   Future<void> _onPlayPauseToggled(

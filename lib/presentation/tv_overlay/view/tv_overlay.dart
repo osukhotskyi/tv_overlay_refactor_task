@@ -71,6 +71,14 @@ class _TvOverlayState extends State<TvOverlay> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        // Playback can start or resume without a key press — the delayed
+        // initial start is the real case. The countdown dies on pause, so
+        // restart it here, or the overlay would stay up forever.
+        BlocListener<PlayerBloc, PlayerState>(
+          listenWhen: (previous, current) =>
+              !previous.value.isPlaying && current.value.isPlaying,
+          listener: (context, _) => _overlay.notifyUserActivity(),
+        ),
         // Playback reaches the intro while the overlay is already hidden.
         BlocListener<PlayerBloc, PlayerState>(
           listenWhen: (previous, current) =>
