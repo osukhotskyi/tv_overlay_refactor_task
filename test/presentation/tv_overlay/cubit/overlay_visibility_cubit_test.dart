@@ -9,7 +9,7 @@ void main() {
 
   test('is visible when the player opens', () {
     fakeAsync((async) {
-      final cubit = OverlayVisibilityCubit();
+      final cubit = OverlayVisibilityCubit(isPlaying: false);
 
       expect(cubit.state, isTrue);
 
@@ -20,7 +20,7 @@ void main() {
 
   test('hides after five seconds of playback', () {
     fakeAsync((async) {
-      final cubit = OverlayVisibilityCubit()..setPlaying(true);
+      final cubit = OverlayVisibilityCubit(isPlaying: true);
 
       async.elapse(hideDelay - const Duration(milliseconds: 1));
       expect(cubit.state, isTrue, reason: 'still within the delay');
@@ -34,7 +34,7 @@ void main() {
 
   test('stays visible while paused', () {
     fakeAsync((async) {
-      final cubit = OverlayVisibilityCubit()..setPlaying(false);
+      final cubit = OverlayVisibilityCubit(isPlaying: false);
 
       async.elapse(hideDelay * 3);
       expect(cubit.state, isTrue);
@@ -45,7 +45,7 @@ void main() {
 
   test('user activity postpones hiding', () {
     fakeAsync((async) {
-      final cubit = OverlayVisibilityCubit()..setPlaying(true);
+      final cubit = OverlayVisibilityCubit(isPlaying: true);
 
       async.elapse(const Duration(seconds: 4));
       cubit.notifyUserActivity();
@@ -63,7 +63,7 @@ void main() {
 
   test('user activity brings a hidden overlay back', () {
     fakeAsync((async) {
-      final cubit = OverlayVisibilityCubit()..setPlaying(true);
+      final cubit = OverlayVisibilityCubit(isPlaying: true);
 
       async.elapse(hideDelay);
       expect(cubit.state, isFalse);
@@ -77,7 +77,7 @@ void main() {
 
   test('emits visibility changes exactly once per transition', () {
     fakeAsync((async) {
-      final cubit = OverlayVisibilityCubit()..setPlaying(true);
+      final cubit = OverlayVisibilityCubit(isPlaying: true);
       final emitted = <bool>[];
       final subscription = cubit.stream.listen(emitted.add);
 
@@ -96,7 +96,7 @@ void main() {
 
   test('does not hide after being closed', () {
     fakeAsync((async) {
-      final cubit = OverlayVisibilityCubit()..setPlaying(true);
+      final cubit = OverlayVisibilityCubit(isPlaying: true);
 
       cubit.close();
       // Would throw "Cannot emit new states after calling close" if the

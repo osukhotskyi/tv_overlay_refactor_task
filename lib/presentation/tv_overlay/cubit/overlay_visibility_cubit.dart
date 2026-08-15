@@ -10,8 +10,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// the screen that started it.
 class OverlayVisibilityCubit extends Cubit<bool> {
   /// The overlay is on screen when the player opens.
-  OverlayVisibilityCubit({this.hideDelay = const Duration(seconds: 5)})
-    : super(true) {
+  ///
+  /// [isPlaying] is required rather than defaulted: the overlay is usually
+  /// created *after* playback has already started, so there is no state change
+  /// left to observe. Getting it wrong means the overlay never hides at all.
+  OverlayVisibilityCubit({
+    required bool isPlaying,
+    this.hideDelay = const Duration(seconds: 5),
+  }) : _isPlaying = isPlaying,
+       super(true) {
     _scheduleHide();
   }
 
@@ -19,7 +26,7 @@ class OverlayVisibilityCubit extends Cubit<bool> {
   final Duration hideDelay;
 
   Timer? _hideTimer;
-  bool _isPlaying = false;
+  bool _isPlaying;
 
   /// Call on any remote key press or tap: the overlay comes back and the
   /// countdown starts over.

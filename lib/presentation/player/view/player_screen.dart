@@ -4,6 +4,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 
 import '../../../domain/entities/device_info.dart';
 import '../../../domain/entities/video_source.dart';
+import '../../tv_overlay/cubit/overlay_visibility_cubit.dart';
 import '../../tv_overlay/view/tv_overlay_old.dart';
 import '../bloc/player_bloc.dart';
 
@@ -66,7 +67,12 @@ class PlayerView extends StatelessWidget {
                   ),
                 ),
               ),
-              const TvOverlayOld(),
+              BlocProvider(
+                create: (_) => OverlayVisibilityCubit(
+                  isPlaying: state.value?.isPlaying ?? false,
+                ),
+                child: const TvOverlayOld(),
+              ),
             ],
           );
         },

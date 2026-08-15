@@ -58,9 +58,6 @@ class PlayerController extends ValueNotifier<PlayerValue> {
   int? _width;
   int? _height;
 
-  Timer? overlayTimer;
-  VoidCallback? onOverlayHided;
-
   Future<void> initialize() async {
     await player.open(Media(url), play: false);
     value = value.copyWith(initialized: true, isLoading: false);
@@ -88,24 +85,6 @@ class PlayerController extends ValueNotifier<PlayerValue> {
     );
   }
 
-  void toggleOverlay() {
-    value = value.copyWith(showOverlay: !value.showOverlay);
-    value.showOverlay ? resetTimer() : overlayTimer?.cancel();
-  }
-
-  void resetTimer() {
-    overlayTimer?.cancel();
-    if (!value.showOverlay) {
-      value = value.copyWith(showOverlay: true);
-    }
-
-    overlayTimer = Timer(const Duration(seconds: 5), () {
-      if (!value.isPlaying) return;
-      value = value.copyWith(showOverlay: false);
-      onOverlayHided?.call();
-    });
-  }
-
   void _update({Duration? position, Duration? duration}) {
     final nextPosition = position ?? value.position;
     final nextDuration = duration ?? value.duration;
@@ -126,7 +105,6 @@ class PlayerController extends ValueNotifier<PlayerValue> {
 
   @override
   void dispose() {
-    overlayTimer?.cancel();
     for (final subscription in _subscriptions) {
       subscription.cancel();
     }

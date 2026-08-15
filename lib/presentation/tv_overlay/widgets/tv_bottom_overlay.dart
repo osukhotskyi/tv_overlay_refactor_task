@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../player/bloc/player_bloc.dart';
 import '../../common/widgets.dart';
+import '../../player/bloc/player_bloc.dart';
+import '../cubit/overlay_visibility_cubit.dart';
 
 class TvBottomOverlay extends StatelessWidget {
   const TvBottomOverlay({required this.nodes, super.key});
@@ -111,7 +112,7 @@ class TvBottomOverlay extends StatelessWidget {
   }
 
   Future<void> _showDialog(BuildContext context, String title) async {
-    final bloc = context.read<PlayerBloc>();
+    final overlay = context.read<OverlayVisibilityCubit>();
 
     await showDialog<void>(
       context: context,
@@ -128,6 +129,9 @@ class TvBottomOverlay extends StatelessWidget {
       ),
     );
 
-    bloc.state.controller?.toggleOverlay();
+    // Closing a dialog is user activity: bring the controls back and restart
+    // the countdown. The old code toggled, so it hid them instead whenever
+    // they were still up.
+    overlay.notifyUserActivity();
   }
 }
