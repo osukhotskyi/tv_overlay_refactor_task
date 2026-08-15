@@ -1,43 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 
-import '../../../domain/entities/device_info.dart';
 import '../../../domain/entities/video_source.dart';
+import '../../../domain/services/playback_service.dart';
 import '../../tv_overlay/cubit/overlay_visibility_cubit.dart';
 import '../../tv_overlay/view/tv_overlay_old.dart';
 import '../bloc/player_bloc.dart';
 
-/// Owns the [PlayerBloc] for the film it is given.
-class PlayerScreen extends StatelessWidget {
-  const PlayerScreen({required this.source, super.key});
+/// A playback service together with the widget that draws its video.
+///
+/// The two come as a pair because rendering needs plugin internals that the
+/// [PlaybackService] interface deliberately hides.
+typedef Playback = ({PlaybackService service, Widget surface});
+
+/// Owns the playback service and the bloc for the film it is given.
+class PlayerScreen extends StatefulWidget {
+  const PlayerScreen({
+    required this.source,
+    required this.createPlayback,
+    super.key,
+  });
 
   final VideoSource source;
+
+  /// Injected so the screen never mentions a player plugin, which is what
+  /// lets widget tests run it against a fake.
+  final Playback Function(VideoSource source) createPlayback;
+
+  @override
+  State<PlayerScreen> createState() => _PlayerScreenState();
+}
+
+class _PlayerScreenState extends State<PlayerScreen> {
+  late final Playback _playback = widget.createPlayback(widget.source);
+
+  @override
+  void dispose() {
+    _playback.service.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => PlayerBloc(
-        source: source,
-        // Read here rather than inside the bloc: a bloc has no BuildContext,
-        // and pulling dependencies from an ambient store would hide them from
-        // its constructor and from tests.
-        //
-        // TODO(refactor): the emulator flag is a detail of how video is
-        // rendered. It leaves this file once PlayerBloc receives a ready
-        // playback service instead of building one itself.
-        isEmulator: context.read<DeviceInfo>().isEmulator,
-      )..add(const PlayerStarted()),
-      child: const PlayerView(),
+      create: (_) =>
+          PlayerBloc(source: widget.source, playback: _playback.service)
+            ..add(const PlayerStarted()),
+      child: PlayerView(videoSurface: _playback.surface),
     );
   }
 }
 
 /// Renders whatever the provided [PlayerBloc] reports. Kept separate from
-/// [PlayerScreen] so tests can supply their own bloc.
+/// [PlayerScreen] so tests can supply their own bloc and surface.
 @visibleForTesting
 class PlayerView extends StatelessWidget {
-  const PlayerView({super.key});
+  const PlayerView({required this.videoSurface, super.key});
+
+  final Widget videoSurface;
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +65,12 @@ class PlayerView extends StatelessWidget {
       backgroundColor: Colors.black,
       body: BlocBuilder<PlayerBloc, PlayerState>(
         builder: (context, state) {
-          if (state.value?.errorDescription != null) {
-            return Center(child: Text(state.value!.errorDescription!));
+          final error = state.value.errorDescription;
+          if (error != null) {
+            return Center(child: Text(error));
           }
 
-          if (state.value?.initialized != true) {
+          if (!state.value.initialized) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -58,20 +79,15 @@ class PlayerView extends StatelessWidget {
             children: [
               Center(
                 child: AspectRatio(
-                  aspectRatio: state.value!.aspectRatio,
-                  // TODO(refactor): media_kit leaks into the presentation
-                  // layer. Replaced by an injected video surface widget.
-                  child: Video(
-                    controller: state.controller!.videoController,
-                    controls: NoVideoControls,
-                  ),
+                  aspectRatio: state.value.aspectRatio,
+                  child: videoSurface,
                 ),
               ),
               BlocProvider(
                 create: (context) {
                   final player = context.read<PlayerBloc>();
                   return OverlayVisibilityCubit(
-                    isPlaying: () => player.state.value?.isPlaying ?? false,
+                    isPlaying: () => player.state.value.isPlaying,
                   );
                 },
                 child: const TvOverlayOld(),

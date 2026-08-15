@@ -4,11 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../services/playback/player_controller.dart';
+import '../../../domain/entities/player_value.dart';
 import '../../common/widgets.dart';
 import '../../player/bloc/player_bloc.dart';
 import '../cubit/overlay_visibility_cubit.dart';
 import '../widgets/tv_bottom_overlay.dart';
+
+/// How far a left/right press on the progress bar jumps.
+const _seekStep = Duration(seconds: 15);
+const _seekStepBack = Duration(seconds: -15);
+
+/// The intro runs between these marks; `Skip intro` jumps to its end.
+const _introStart = Duration(seconds: 10);
+const _introEnd = Duration(seconds: 20);
 
 class TvOverlayOld extends StatefulWidget {
   const TvOverlayOld({super.key});
@@ -24,8 +32,7 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
 
   static const _keyEventDebounce = Duration(milliseconds: 50);
 
-  PlayerValue get _value => bloc.state.value!;
-  PlayerController get _controller => bloc.state.controller!;
+  PlayerValue get _value => bloc.state.value;
 
   late final _skipFocusNode = FocusNode(
     debugLabel: 'skip_focus_scope_node',
@@ -87,21 +94,18 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
   late final _progressFocusNode = FocusScopeNode(
     debugLabel: 'progress_focus_scope_node',
     onKeyEvent: (node, event) {
-      if (event is KeyUpEvent || event is KeyRepeatEvent) {
+      if (event is! KeyDownEvent) {
         return KeyEventResult.ignored;
       }
-      if (event is KeyDownEvent &&
-          event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
         overlay.notifyUserActivity();
-        _value.position.inSeconds < 15
-            ? _controller.seekTo(0)
-            : _controller.seekBy(-15);
+        // The service clamps at zero, so no special case near the start.
+        bloc.add(const PlayerSeekedBy(_seekStepBack));
         return KeyEventResult.handled;
       }
-      if (event is KeyDownEvent &&
-          event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
         overlay.notifyUserActivity();
-        _controller.seekBy(15);
+        bloc.add(const PlayerSeekedBy(_seekStep));
         return KeyEventResult.handled;
       }
       if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
@@ -155,7 +159,7 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
         // Playback reaches the intro while the overlay is already hidden.
         BlocListener<PlayerBloc, PlayerState>(
           listenWhen: (previous, current) =>
-              previous.value?.position != current.value?.position,
+              previous.value.position != current.value.position,
           listener: (context, state) {
             if (!overlay.state) _focusSkipIntroIfVisible();
           },
@@ -187,21 +191,21 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
             children: [
               BlocBuilder<PlayerBloc, PlayerState>(
                 buildWhen: (previous, current) =>
-                    previous.value?.isPlaying != current.value?.isPlaying,
+                    previous.value.isPlaying != current.value.isPlaying,
                 builder: (context, state) => Visibility(
-                  visible: visible || !(state.value?.isPlaying ?? false),
+                  visible: visible || !state.value.isPlaying,
                   child: const ColoredBox(color: Color(0x66000000)),
                 ),
               ),
               BlocBuilder<PlayerBloc, PlayerState>(
                 buildWhen: (previous, current) =>
-                    previous.value?.isPlaying != current.value?.isPlaying ||
+                    previous.value.isPlaying != current.value.isPlaying ||
                     previous.contentName != current.contentName,
                 builder: (context, state) => AnimatedPositioned(
                   duration: const Duration(milliseconds: 200),
                   left: 32,
                   right: 32,
-                  top: visible || !(state.value?.isPlaying ?? false) ? 32 : -80,
+                  top: visible || !state.value.isPlaying ? 32 : -80,
                   child: Row(
                     children: [
                       PlayerButton(
@@ -226,14 +230,12 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
               ),
               BlocBuilder<PlayerBloc, PlayerState>(
                 buildWhen: (previous, current) =>
-                    previous.value?.isPlaying != current.value?.isPlaying,
+                    previous.value.isPlaying != current.value.isPlaying,
                 builder: (context, state) => AnimatedPositioned(
                   duration: const Duration(milliseconds: 200),
                   left: 32,
                   right: 32,
-                  bottom: visible || !(state.value?.isPlaying ?? false)
-                      ? 24
-                      : -140,
+                  bottom: visible || !state.value.isPlaying ? 24 : -140,
                   child: TvBottomOverlay(
                     nodes: [_actionsFocusNode, _progressFocusNode],
                   ),
@@ -241,7 +243,7 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
               ),
               BlocBuilder<PlayerBloc, PlayerState>(
                 buildWhen: (previous, current) =>
-                    previous.value?.position != current.value?.position,
+                    previous.value.position != current.value.position,
                 builder: (context, state) => Visibility(
                   visible: _showSkipIntro,
                   child: Positioned(
@@ -251,18 +253,17 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
                       node: _skipFocusNode,
                       title: 'Skip intro',
                       icon: Icons.skip_next,
-                      onTap: () =>
-                          _controller.seekTo(20 / _value.duration!.inSeconds),
+                      onTap: () => bloc.add(const PlayerSeeked(_introEnd)),
                     ),
                   ),
                 ),
               ),
               BlocBuilder<PlayerBloc, PlayerState>(
                 buildWhen: (previous, current) =>
-                    previous.value?.initialized != current.value?.initialized ||
-                    previous.value?.isLoading != current.value?.isLoading,
+                    previous.value.initialized != current.value.initialized ||
+                    previous.value.isLoading != current.value.isLoading,
                 builder: (context, state) => Visibility(
-                  visible: !state.value!.initialized || state.value!.isLoading,
+                  visible: !state.value.initialized || state.value.isLoading,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
               ),
@@ -274,8 +275,8 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
   }
 
   bool get _showSkipIntro =>
-      _value.position.inSeconds >= 10 &&
-      _value.position.inSeconds < 20 &&
+      _value.position >= _introStart &&
+      _value.position < _introEnd &&
       _value.sliderValue != 0 &&
       _value.initialized;
 }

@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/utils/duration_format.dart';
-import '../../services/playback/player_controller.dart';
-
-// Re-exported so widgets importing this file keep seeing formatDuration.
-export '../../core/utils/duration_format.dart';
 
 extension TvKeyEventX on KeyEvent {
   bool get up => logicalKey == LogicalKeyboardKey.arrowUp;
@@ -239,15 +235,15 @@ class DefaultPlayerButton extends StatelessWidget {
 
 class FramePlayerProgressBar extends StatelessWidget {
   const FramePlayerProgressBar({
-    required this.controller,
+    required this.position,
+    required this.duration,
     required this.node,
-    this.color,
     super.key,
   });
 
-  final PlayerController controller;
+  final Duration position;
+  final Duration duration;
   final FocusScopeNode node;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -257,10 +253,7 @@ class FramePlayerProgressBar extends StatelessWidget {
         hasFocus: node.hasFocus,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          child: PlayerProgressBar(
-            position: controller.value.position,
-            duration: controller.value.duration ?? Duration.zero,
-          ),
+          child: PlayerProgressBar(position: position, duration: duration),
         ),
       ),
     );

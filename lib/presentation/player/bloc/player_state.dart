@@ -3,26 +3,22 @@ part of 'player_bloc.dart';
 class PlayerState extends Equatable {
   const PlayerState({
     required this.contentName,
-    this.controller,
-    this.value,
+    this.value = const PlayerValue(),
   });
 
-  final PlayerController? controller;
-  final PlayerValue? value;
   final String contentName;
 
-  PlayerState copyWith({
-    PlayerController? controller,
-    PlayerValue? value,
-    String? contentName,
-  }) {
+  /// Never null: before the service reports anything this holds the defaults,
+  /// which spares every widget a null check.
+  final PlayerValue value;
+
+  PlayerState copyWith({String? contentName, PlayerValue? value}) {
     return PlayerState(
-      controller: controller ?? this.controller,
-      value: value ?? this.value,
       contentName: contentName ?? this.contentName,
+      value: value ?? this.value,
     );
   }
 
   @override
-  List<Object?> get props => [controller, value, contentName];
+  List<Object?> get props => [contentName, value];
 }
