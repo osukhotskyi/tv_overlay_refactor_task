@@ -4,11 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../common/widgets.dart';
 import '../../player/bloc/player_bloc.dart';
 import '../cubit/overlay_visibility_cubit.dart';
+import '../focus/overlay_focus_controller.dart';
 
 class TvBottomOverlay extends StatelessWidget {
-  const TvBottomOverlay({required this.nodes, super.key});
+  const TvBottomOverlay({required this.focus, super.key});
 
-  final List<FocusScopeNode> nodes;
+  final OverlayFocusController focus;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class TvBottomOverlay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         FocusScope(
-          node: nodes[0],
+          node: focus.actions,
           child: Row(
             children: [
               BlocBuilder<PlayerBloc, PlayerState>(
@@ -24,7 +25,7 @@ class TvBottomOverlay extends StatelessWidget {
                     previous.value.isPlaying != current.value.isPlaying,
                 builder: (context, state) {
                   return FocusWrapper(
-                    debugLabel: 'action',
+                    focusNode: focus.playPause,
                     autofocus: true,
                     onTap: () => context.read<PlayerBloc>().add(
                       const PlayerPlayPauseToggled(),
@@ -68,7 +69,7 @@ class TvBottomOverlay extends StatelessWidget {
           builder: (context, state) => FramePlayerProgressBar(
             position: state.value.position,
             duration: state.value.duration ?? Duration.zero,
-            node: nodes[1],
+            node: focus.progress,
           ),
         ),
       ],

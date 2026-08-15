@@ -13,45 +13,21 @@ extension TvKeyEventX on KeyEvent {
           logicalKey == LogicalKeyboardKey.select);
 }
 
-class ScrollViewFocusScopeNode extends FocusScopeNode {
-  ScrollViewFocusScopeNode({
-    required this.enableAnimation,
-    required this.onReached,
-    super.debugLabel,
-  }) : super(
-         onKeyEvent: (node, event) {
-           if (event is! KeyDownEvent) {
-             return KeyEventResult.ignored;
-           }
-
-           if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-             onReached(AxisDirection.up);
-             return KeyEventResult.handled;
-           }
-
-           if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-             onReached(AxisDirection.down);
-             return KeyEventResult.handled;
-           }
-
-           return KeyEventResult.ignored;
-         },
-       );
-
-  final ValueNotifier<bool> enableAnimation;
-  final ValueChanged<AxisDirection> onReached;
-}
-
 class FocusWrapper extends StatefulWidget {
   const FocusWrapper({
     required this.onTap,
     required this.builder,
+    this.focusNode,
     this.autofocus = false,
     this.debugLabel,
     super.key,
   });
 
   final VoidCallback onTap;
+
+  /// Supply a node when something outside needs to move focus here; otherwise
+  /// the widget creates and owns one.
+  final FocusNode? focusNode;
   final bool autofocus;
   final String? debugLabel;
   final Widget Function(BuildContext context, bool hasFocus, Widget? child)
@@ -62,16 +38,22 @@ class FocusWrapper extends StatefulWidget {
 }
 
 class _FocusWrapperState extends State<FocusWrapper> {
-  late final FocusNode _node = FocusNode(debugLabel: widget.debugLabel)
-    ..addListener(_rebuild);
+  FocusNode? _owned;
+  late final FocusNode _node =
+      widget.focusNode ?? (_owned = FocusNode(debugLabel: widget.debugLabel));
 
   void _rebuild() => setState(() {});
 
   @override
+  void initState() {
+    super.initState();
+    _node.addListener(_rebuild);
+  }
+
+  @override
   void dispose() {
-    _node
-      ..removeListener(_rebuild)
-      ..dispose();
+    _node.removeListener(_rebuild);
+    _owned?.dispose();
     super.dispose();
   }
 
@@ -233,7 +215,7 @@ class DefaultPlayerButton extends StatelessWidget {
   }
 }
 
-class FramePlayerProgressBar extends StatelessWidget {
+class FramePlayerProgressBar extends StatefulWidget {
   const FramePlayerProgressBar({
     required this.position,
     required this.duration,
@@ -246,14 +228,48 @@ class FramePlayerProgressBar extends StatelessWidget {
   final FocusScopeNode node;
 
   @override
+  State<FramePlayerProgressBar> createState() => _FramePlayerProgressBarState();
+}
+
+class _FramePlayerProgressBarState extends State<FramePlayerProgressBar> {
+  // Listens to its own node, so the highlight no longer depends on the
+  // position stream happening to rebuild this widget.
+  @override
+  void initState() {
+    super.initState();
+    widget.node.addListener(_rebuild);
+  }
+
+  @override
+  void didUpdateWidget(FramePlayerProgressBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.node == widget.node) return;
+    oldWidget.node.removeListener(_rebuild);
+    widget.node.addListener(_rebuild);
+  }
+
+  @override
+  void dispose() {
+    widget.node.removeListener(_rebuild);
+    super.dispose();
+  }
+
+  void _rebuild() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FocusScope(
-      node: node,
+      node: widget.node,
       child: PlayerFocusDecoration(
-        hasFocus: node.hasFocus,
+        hasFocus: widget.node.hasFocus,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          child: PlayerProgressBar(position: position, duration: duration),
+          child: PlayerProgressBar(
+            position: widget.position,
+            duration: widget.duration,
+          ),
         ),
       ),
     );
