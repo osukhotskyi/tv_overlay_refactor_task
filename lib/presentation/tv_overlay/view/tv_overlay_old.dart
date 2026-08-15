@@ -152,13 +152,6 @@ class _TvOverlayOldState extends State<TvOverlayOld> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        // The overlay must stay up while paused, so it needs to know.
-        BlocListener<PlayerBloc, PlayerState>(
-          listenWhen: (previous, current) =>
-              previous.value?.isPlaying != current.value?.isPlaying,
-          listener: (context, state) =>
-              overlay.setPlaying(state.value?.isPlaying ?? false),
-        ),
         // Playback reaches the intro while the overlay is already hidden.
         BlocListener<PlayerBloc, PlayerState>(
           listenWhen: (previous, current) =>

@@ -68,9 +68,12 @@ class PlayerView extends StatelessWidget {
                 ),
               ),
               BlocProvider(
-                create: (_) => OverlayVisibilityCubit(
-                  isPlaying: state.value?.isPlaying ?? false,
-                ),
+                create: (context) {
+                  final player = context.read<PlayerBloc>();
+                  return OverlayVisibilityCubit(
+                    isPlaying: () => player.state.value?.isPlaying ?? false,
+                  );
+                },
                 child: const TvOverlayOld(),
               ),
             ],

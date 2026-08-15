@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Whether the playback controls are currently on screen.
@@ -10,23 +11,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// the screen that started it.
 class OverlayVisibilityCubit extends Cubit<bool> {
   /// The overlay is on screen when the player opens.
-  ///
-  /// [isPlaying] is required rather than defaulted: the overlay is usually
-  /// created *after* playback has already started, so there is no state change
-  /// left to observe. Getting it wrong means the overlay never hides at all.
   OverlayVisibilityCubit({
-    required bool isPlaying,
+    required this.isPlaying,
     this.hideDelay = const Duration(seconds: 5),
-  }) : _isPlaying = isPlaying,
-       super(true) {
+  }) : super(true) {
     _scheduleHide();
   }
+
+  /// Asked whenever the countdown fires, rather than mirrored into a field
+  /// here: playback state belongs to the player, and a local copy would have
+  /// to be kept in sync by hand — one forgotten wire-up and the controls
+  /// either never hide or hide while paused.
+  final ValueGetter<bool> isPlaying;
 
   /// How long the overlay stays up without user input.
   final Duration hideDelay;
 
   Timer? _hideTimer;
-  bool _isPlaying;
 
   /// Call on any remote key press or tap: the overlay comes back and the
   /// countdown starts over.
@@ -38,16 +39,11 @@ class OverlayVisibilityCubit extends Cubit<bool> {
     _scheduleHide();
   }
 
-  /// Keeps track of playback, because the overlay is never hidden while
-  /// paused.
-  // ignore: use_setters_to_change_properties
-  void setPlaying(bool isPlaying) => _isPlaying = isPlaying;
-
   void _scheduleHide() {
     _hideTimer?.cancel();
     _hideTimer = Timer(hideDelay, () {
       // While paused the controls stay up; the next user action reschedules.
-      if (!_isPlaying) return;
+      if (!isPlaying()) return;
       emit(false);
     });
   }
