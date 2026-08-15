@@ -66,6 +66,9 @@ class TvBottomOverlay extends StatelessWidget {
             position: progress.position,
             duration: progress.duration,
             node: focus.progress,
+            onSeek: (offset) =>
+                context.read<PlayerBloc>().add(PlayerSeekedBy(offset)),
+            onFocusUp: focus.focusPlayPause,
           ),
         ),
       ],

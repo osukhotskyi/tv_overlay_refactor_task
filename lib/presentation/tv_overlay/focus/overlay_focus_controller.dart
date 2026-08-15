@@ -1,21 +1,23 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-/// Owns every focus node of the overlay and all movement between its zones.
+/// Owns the overlay's focus nodes and answers one question: where does a
+/// direction lead from here.
 ///
-/// Previously this was spread across five separate `onKeyEvent` callbacks that
-/// each decided where the D-pad should go next. Keeping it together means the
-/// rules can be read in one sitting — and the play/pause node is now held by
-/// reference instead of being looked up by `debugLabel`, which silently fails
-/// in release builds because that label is only assigned inside an assert.
+/// That answer cannot live in the individual widgets, because it depends on
+/// zones they know nothing about — `up` from the action row goes to the intro
+/// button when it is on screen and to the top bar otherwise. Behaviour that a
+/// widget *can* decide alone stays with the widget: Select belongs to the
+/// button that was pressed, seeking belongs to the progress bar.
+///
+/// Nodes attached to a [Focus] widget get their `onKeyEvent` overwritten on
+/// attach, so the two handlers below are handed to those widgets instead of
+/// being installed on the nodes.
 class OverlayFocusController {
   OverlayFocusController({
     required this.isSkipIntroVisible,
     required this.isOverlayVisible,
     required this.isPlaying,
-    required this.onSeekBy,
-    required this.onBack,
-    this.seekStep = const Duration(seconds: 15),
   });
 
   /// Asked when a key arrives, so the answer is never stale.
@@ -23,24 +25,12 @@ class OverlayFocusController {
   final ValueGetter<bool> isOverlayVisible;
   final ValueGetter<bool> isPlaying;
 
-  final ValueChanged<Duration> onSeekBy;
-  final VoidCallback onBack;
-
-  /// How far one left/right press on the progress bar jumps.
-  final Duration seekStep;
-
-  late final FocusNode back = FocusNode(
-    debugLabel: 'overlay.back',
-    onKeyEvent: _onBackKey,
-  );
+  final FocusNode back = FocusNode(debugLabel: 'overlay.back');
 
   /// The play/pause button. Held directly; never searched for.
-  late final FocusNode playPause = FocusNode(debugLabel: 'overlay.playPause');
+  final FocusNode playPause = FocusNode(debugLabel: 'overlay.playPause');
 
-  late final FocusNode skipIntro = FocusNode(
-    debugLabel: 'overlay.skipIntro',
-    onKeyEvent: _onSkipIntroKey,
-  );
+  final FocusNode skipIntro = FocusNode(debugLabel: 'overlay.skipIntro');
 
   /// Wraps the row of player actions, so left/right inside it stays default.
   late final FocusScopeNode actions = FocusScopeNode(
@@ -48,9 +38,8 @@ class OverlayFocusController {
     onKeyEvent: _onActionsKey,
   );
 
-  late final FocusScopeNode progress = FocusScopeNode(
+  final FocusScopeNode progress = FocusScopeNode(
     debugLabel: 'overlay.progress',
-    onKeyEvent: _onProgressKey,
   );
 
   void focusPlayPause() => playPause.requestFocus();
@@ -66,7 +55,8 @@ class OverlayFocusController {
     isSkipIntroVisible() ? skipIntro.requestFocus() : focusPlayPause();
   }
 
-  KeyEventResult _onBackKey(FocusNode node, KeyEvent event) {
+  /// Directional keys for the back button. Pass to its `onDirectionalKey`.
+  KeyEventResult onBackKey(KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
 
     // While the controls are hidden the first press only brings them back.
@@ -76,15 +66,12 @@ class OverlayFocusController {
       focusBelowTopBar();
       return KeyEventResult.handled;
     }
-    if (_isSubmit(event)) {
-      onBack();
-      return KeyEventResult.handled;
-    }
     // Swallow the rest so the top bar does not hand focus sideways.
     return KeyEventResult.handled;
   }
 
-  KeyEventResult _onSkipIntroKey(FocusNode node, KeyEvent event) {
+  /// Directional keys for the intro button. Pass to its `onDirectionalKey`.
+  KeyEventResult onSkipIntroKey(KeyEvent event) {
     if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.arrowUp) {
       back.requestFocus();
@@ -106,28 +93,6 @@ class OverlayFocusController {
     }
     return KeyEventResult.ignored;
   }
-
-  KeyEventResult _onProgressKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-
-    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      onSeekBy(-seekStep);
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-      onSeekBy(seekStep);
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-      focusPlayPause();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
-
-  static bool _isSubmit(KeyEvent event) =>
-      event.logicalKey == LogicalKeyboardKey.enter ||
-      event.logicalKey == LogicalKeyboardKey.select;
 
   void dispose() {
     back.dispose();

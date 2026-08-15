@@ -32,8 +32,6 @@ class _TvOverlayState extends State<TvOverlay> {
     isSkipIntroVisible: () => _showSkipIntro,
     isOverlayVisible: () => _overlay.state,
     isPlaying: () => _value.isPlaying,
-    onSeekBy: (offset) => _bloc.add(PlayerSeekedBy(offset)),
-    onBack: () => Navigator.of(context).maybePop(),
   );
 
   PlayerValue get _value => _bloc.state.value;
@@ -95,11 +93,11 @@ class _TvOverlayState extends State<TvOverlay> {
             fit: StackFit.expand,
             children: [
               _Scrim(visible: visible),
-              _TopBar(visible: visible, backNode: _focus.back),
+              _TopBar(visible: visible, focus: _focus),
               _Controls(visible: visible, focus: _focus),
               _SkipIntroButton(
                 visible: visible,
-                node: _focus.skipIntro,
+                focus: _focus,
                 isOnScreen: () => _showSkipIntro,
                 onTap: () => _bloc.add(const PlayerSeeked(_introEnd)),
               ),
@@ -142,10 +140,10 @@ class _Scrim extends StatelessWidget {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.visible, required this.backNode});
+  const _TopBar({required this.visible, required this.focus});
 
   final bool visible;
-  final FocusNode backNode;
+  final OverlayFocusController focus;
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +172,8 @@ class _TopBar extends StatelessWidget {
             child: Row(
               children: [
                 PlayerButton(
-                  focusNode: backNode,
+                  focusNode: focus.back,
+                  onDirectionalKey: focus.onBackKey,
                   onPressed: () => Navigator.of(context).maybePop(),
                   child: const Padding(
                     padding: EdgeInsets.all(14),
@@ -230,13 +229,13 @@ class _Controls extends StatelessWidget {
 class _SkipIntroButton extends StatelessWidget {
   const _SkipIntroButton({
     required this.visible,
-    required this.node,
+    required this.focus,
     required this.isOnScreen,
     required this.onTap,
   });
 
   final bool visible;
-  final FocusNode node;
+  final OverlayFocusController focus;
   final ValueGetter<bool> isOnScreen;
   final VoidCallback onTap;
 
@@ -259,7 +258,8 @@ class _SkipIntroButton extends StatelessWidget {
           left: 32,
           bottom: visible ? _aboveControls : _nearBottomEdge,
           child: PlayerLabeledButton(
-            focusNode: node,
+            focusNode: focus.skipIntro,
+            onDirectionalKey: focus.onSkipIntroKey,
             title: 'Skip intro',
             icon: Icons.skip_next,
             onTap: onTap,

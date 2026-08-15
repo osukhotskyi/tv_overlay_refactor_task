@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/utils/duration_format.dart';
 import '../../common/player_focus_decoration.dart';
+
+/// How far one left/right press jumps.
+const _seekStep = Duration(seconds: 15);
 
 /// The seek bar of the overlay: a focus scope wearing the standard highlight.
 ///
@@ -12,12 +16,21 @@ class OverlayProgressBar extends StatefulWidget {
     required this.position,
     required this.duration,
     required this.node,
+    required this.onSeek,
+    required this.onFocusUp,
     super.key,
   });
 
   final Duration position;
   final Duration duration;
   final FocusScopeNode node;
+
+  /// Seeking is this widget's own business: it decides that left and right
+  /// mean ±[_seekStep] and simply reports the jump.
+  final ValueChanged<Duration> onSeek;
+
+  /// Leaving upwards is not — where that leads is the overlay's decision.
+  final VoidCallback onFocusUp;
 
   @override
   State<OverlayProgressBar> createState() => _OverlayProgressBarState();
@@ -48,10 +61,27 @@ class _OverlayProgressBarState extends State<OverlayProgressBar> {
     if (mounted) setState(() {});
   }
 
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.arrowLeft:
+        widget.onSeek(-_seekStep);
+      case LogicalKeyboardKey.arrowRight:
+        widget.onSeek(_seekStep);
+      case LogicalKeyboardKey.arrowUp:
+        widget.onFocusUp();
+      default:
+        return KeyEventResult.ignored;
+    }
+    return KeyEventResult.handled;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FocusScope(
       node: widget.node,
+      onKeyEvent: _onKeyEvent,
       child: PlayerFocusDecoration(
         hasFocus: widget.node.hasFocus,
         child: Padding(

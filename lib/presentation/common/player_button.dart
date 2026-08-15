@@ -13,6 +13,7 @@ class PlayerButton extends StatelessWidget {
     required this.onPressed,
     required this.child,
     this.focusNode,
+    this.onDirectionalKey,
     super.key,
   });
 
@@ -20,10 +21,14 @@ class PlayerButton extends StatelessWidget {
   final Widget child;
   final FocusNode? focusNode;
 
+  /// See [FocusWrapper.onDirectionalKey].
+  final KeyEventResult Function(KeyEvent event)? onDirectionalKey;
+
   @override
   Widget build(BuildContext context) {
     return FocusWrapper(
       focusNode: focusNode,
+      onDirectionalKey: onDirectionalKey,
       onTap: onPressed,
       builder: (_, hasFocus, _) =>
           PlayerFocusDecoration(hasFocus: hasFocus, child: child),
@@ -38,6 +43,7 @@ class PlayerLabeledButton extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.focusNode,
+    this.onDirectionalKey,
     super.key,
   });
 
@@ -46,10 +52,14 @@ class PlayerLabeledButton extends StatelessWidget {
   final VoidCallback onTap;
   final FocusNode? focusNode;
 
+  /// See [FocusWrapper.onDirectionalKey].
+  final KeyEventResult Function(KeyEvent event)? onDirectionalKey;
+
   @override
   Widget build(BuildContext context) {
     return PlayerButton(
       focusNode: focusNode,
+      onDirectionalKey: onDirectionalKey,
       onPressed: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),

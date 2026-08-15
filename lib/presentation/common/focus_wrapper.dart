@@ -11,6 +11,7 @@ class FocusWrapper extends StatefulWidget {
     required this.onTap,
     required this.builder,
     this.focusNode,
+    this.onDirectionalKey,
     this.debugLabel,
     super.key,
   });
@@ -20,6 +21,15 @@ class FocusWrapper extends StatefulWidget {
   /// Supply a node when something outside needs to move focus here; otherwise
   /// the widget creates and owns one.
   final FocusNode? focusNode;
+
+  /// Consulted for keys this widget does not claim itself — directional
+  /// navigation, typically.
+  ///
+  /// It has to arrive as a callback rather than being set on the node: a
+  /// [Focus] widget overwrites `FocusNode.onKeyEvent` when it attaches, so a
+  /// handler installed on the node would silently never run.
+  final KeyEventResult Function(KeyEvent event)? onDirectionalKey;
+
   final String? debugLabel;
   final Widget Function(BuildContext context, bool hasFocus, Widget? child)
   builder;
@@ -53,9 +63,11 @@ class _FocusWrapperState extends State<FocusWrapper> {
     return Focus(
       focusNode: _node,
       onKeyEvent: (_, event) {
-        if (!_isSubmit(event)) return KeyEventResult.ignored;
-        widget.onTap();
-        return KeyEventResult.handled;
+        if (_isSubmit(event)) {
+          widget.onTap();
+          return KeyEventResult.handled;
+        }
+        return widget.onDirectionalKey?.call(event) ?? KeyEventResult.ignored;
       },
       child: GestureDetector(
         onTap: widget.onTap,
