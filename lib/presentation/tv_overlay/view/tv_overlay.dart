@@ -131,11 +131,10 @@ class _Scrim extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayerBloc, PlayerState>(
-      buildWhen: (previous, current) =>
-          previous.value.isPlaying != current.value.isPlaying,
-      builder: (context, state) => Visibility(
-        visible: visible || !state.value.isPlaying,
+    return BlocSelector<PlayerBloc, PlayerState, bool>(
+      selector: (state) => state.value.isPlaying,
+      builder: (context, isPlaying) => Visibility(
+        visible: visible || !isPlaying,
         child: const ColoredBox(color: Color(0x66000000)),
       ),
     );
@@ -150,11 +149,16 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayerBloc, PlayerState>(
-      buildWhen: (previous, current) =>
-          previous.value.isPlaying != current.value.isPlaying ||
-          previous.contentName != current.contentName,
-      builder: (context, state) => Positioned(
+    return BlocSelector<
+      PlayerBloc,
+      PlayerState,
+      ({bool isPlaying, String title})
+    >(
+      selector: (state) => (
+        isPlaying: state.value.isPlaying,
+        title: state.contentName,
+      ),
+      builder: (context, data) => Positioned(
         left: 0,
         right: 0,
         top: 0,
@@ -162,7 +166,7 @@ class _TopBar extends StatelessWidget {
           duration: _panelAnimation,
           // One full height up, so the bar clears the top edge whatever it
           // ends up measuring. No hand-tuned offset to explain.
-          offset: visible || !state.value.isPlaying
+          offset: visible || !data.isPlaying
               ? Offset.zero
               : const Offset(0, -1),
           child: Padding(
@@ -179,7 +183,7 @@ class _TopBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  state.contentName,
+                  data.title,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
@@ -202,10 +206,9 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayerBloc, PlayerState>(
-      buildWhen: (previous, current) =>
-          previous.value.isPlaying != current.value.isPlaying,
-      builder: (context, state) => Positioned(
+    return BlocSelector<PlayerBloc, PlayerState, bool>(
+      selector: (state) => state.value.isPlaying,
+      builder: (context, isPlaying) => Positioned(
         left: 0,
         right: 0,
         bottom: 0,
@@ -213,9 +216,7 @@ class _Controls extends StatelessWidget {
           duration: _panelAnimation,
           // One full height down: the panel is off the bottom edge no matter
           // how tall the controls turn out to be.
-          offset: visible || !state.value.isPlaying
-              ? Offset.zero
-              : const Offset(0, 1),
+          offset: visible || !isPlaying ? Offset.zero : const Offset(0, 1),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(32, 0, 32, 24),
             child: TvBottomOverlay(focus: focus),
@@ -247,11 +248,13 @@ class _SkipIntroButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayerBloc, PlayerState>(
-      buildWhen: (previous, current) =>
-          previous.value.position != current.value.position,
-      builder: (context, state) => Visibility(
-        visible: isOnScreen(),
+    return BlocSelector<PlayerBloc, PlayerState, bool>(
+      // The getter already reads the current state, and selecting the flag
+      // rather than the position means one rebuild when the button appears
+      // instead of one on every tick while it is on screen.
+      selector: (_) => isOnScreen(),
+      builder: (context, onScreen) => Visibility(
+        visible: onScreen,
         child: Positioned(
           left: 32,
           bottom: visible ? _aboveControls : _nearBottomEdge,
@@ -272,12 +275,10 @@ class _BufferingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayerBloc, PlayerState>(
-      buildWhen: (previous, current) =>
-          previous.value.initialized != current.value.initialized ||
-          previous.value.isLoading != current.value.isLoading,
-      builder: (context, state) => Visibility(
-        visible: !state.value.initialized || state.value.isLoading,
+    return BlocSelector<PlayerBloc, PlayerState, bool>(
+      selector: (state) => !state.value.initialized || state.value.isLoading,
+      builder: (context, busy) => Visibility(
+        visible: busy,
         child: const Center(child: CircularProgressIndicator()),
       ),
     );

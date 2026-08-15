@@ -21,10 +21,9 @@ class TvBottomOverlay extends StatelessWidget {
           node: focus.actions,
           child: Row(
             children: [
-              BlocBuilder<PlayerBloc, PlayerState>(
-                buildWhen: (previous, current) =>
-                    previous.value.isPlaying != current.value.isPlaying,
-                builder: (context, state) => PlayerButton(
+              BlocSelector<PlayerBloc, PlayerState, bool>(
+                selector: (state) => state.value.isPlaying,
+                builder: (context, isPlaying) => PlayerButton(
                   focusNode: focus.playPause,
                   onPressed: () => context.read<PlayerBloc>().add(
                     const PlayerPlayPauseToggled(),
@@ -32,7 +31,7 @@ class TvBottomOverlay extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Icon(
-                      state.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                      isPlaying ? Icons.pause : Icons.play_arrow,
                       size: 30,
                     ),
                   ),
@@ -54,13 +53,18 @@ class TvBottomOverlay extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        BlocBuilder<PlayerBloc, PlayerState>(
-          buildWhen: (previous, current) =>
-              previous.value.position != current.value.position ||
-              previous.value.duration != current.value.duration,
-          builder: (context, state) => OverlayProgressBar(
+        BlocSelector<
+          PlayerBloc,
+          PlayerState,
+          ({Duration position, Duration duration})
+        >(
+          selector: (state) => (
             position: state.value.position,
             duration: state.value.duration ?? Duration.zero,
+          ),
+          builder: (context, progress) => OverlayProgressBar(
+            position: progress.position,
+            duration: progress.duration,
             node: focus.progress,
           ),
         ),
