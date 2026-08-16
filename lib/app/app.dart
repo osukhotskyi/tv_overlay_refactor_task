@@ -50,7 +50,9 @@ class TvOverlayRefactorApp extends StatelessWidget {
             );
             return (
               service: service,
-              surface: MediaKitVideoSurface(service: service),
+              surface: MediaKitVideoSurface(
+                controller: service.videoController,
+              ),
             );
           },
         ),
