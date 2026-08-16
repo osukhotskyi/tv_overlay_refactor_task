@@ -6,6 +6,7 @@ import 'package:tv_overlay_refactor_task/domain/entities/video_source.dart';
 import 'package:tv_overlay_refactor_task/presentation/screens/player/player_screen.dart';
 import 'package:tv_overlay_refactor_task/presentation/screens/player/overlay/cubit/overlay_visibility_cubit.dart';
 import 'package:tv_overlay_refactor_task/presentation/screens/player/overlay/tv_overlay.dart';
+import 'package:tv_overlay_refactor_task/presentation/widgets/player_button.dart';
 
 import '../../../../fakes/fake_playback_service.dart';
 
@@ -164,6 +165,40 @@ void main() {
 
     expect(overlayOf(tester).state, isFalse);
     expect(focusedLabel(), 'overlay.skipIntro');
+
+    await unmount(tester);
+  });
+
+  testWidgets('Skip intro does not overlap the play/pause button', (
+    tester,
+  ) async {
+    await pumpPlayer(tester);
+    await reachIntroWindow(tester);
+
+    final skipRect = tester.getRect(
+      find.ancestor(
+        of: find.text('Skip intro'),
+        matching: find.byType(PlayerLabeledButton),
+      ),
+    );
+    final playPauseRect = tester.getRect(
+      find
+          .ancestor(
+            of: find.byIcon(Icons.pause),
+            matching: find.byType(PlayerButton),
+          )
+          .first,
+    );
+
+    // The original placed the button 10px into the play/pause button; keep
+    // them apart. Screen coordinates grow downwards.
+    expect(
+      skipRect.bottom <= playPauseRect.top,
+      isTrue,
+      reason:
+          'skip bottom ${skipRect.bottom} must be above '
+          'play/pause top ${playPauseRect.top}',
+    );
 
     await unmount(tester);
   });

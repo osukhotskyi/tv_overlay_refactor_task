@@ -249,8 +249,11 @@ class _SkipIntroButton extends StatelessWidget {
   final OverlayFocusController focus;
   final VoidCallback onTap;
 
-  /// High enough to clear the controls panel while it is on screen.
-  static const _aboveControls = 140.0;
+  /// Clears the controls panel while it is on screen: the action row's top
+  /// sits 150 from the bottom edge (24 inset + 52 progress bar + 12 gap +
+  /// 62 row), plus the panel's own 12 rhythm. The original's 140 left the
+  /// button overlapping play/pause by ~10px.
+  static const _aboveControls = 162.0;
 
   /// Once the controls slide away, the button drops near the bottom edge.
   static const _nearBottomEdge = 50.0;
