@@ -13,6 +13,7 @@ class PlayerButton extends StatelessWidget {
     required this.onPressed,
     required this.child,
     this.focusNode,
+    this.autofocus = false,
     this.onDirectionalKey,
     super.key,
   });
@@ -21,6 +22,9 @@ class PlayerButton extends StatelessWidget {
   final Widget child;
   final FocusNode? focusNode;
 
+  /// See [FocusWrapper.autofocus].
+  final bool autofocus;
+
   /// See [FocusWrapper.onDirectionalKey].
   final KeyEventResult Function(KeyEvent event)? onDirectionalKey;
 
@@ -28,6 +32,7 @@ class PlayerButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FocusWrapper(
       focusNode: focusNode,
+      autofocus: autofocus,
       onDirectionalKey: onDirectionalKey,
       onTap: onPressed,
       builder: (_, hasFocus, _) =>

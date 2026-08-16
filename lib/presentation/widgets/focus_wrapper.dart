@@ -11,6 +11,7 @@ class FocusWrapper extends StatefulWidget {
     required this.onTap,
     required this.builder,
     this.focusNode,
+    this.autofocus = false,
     this.onDirectionalKey,
     this.debugLabel,
     super.key,
@@ -21,6 +22,11 @@ class FocusWrapper extends StatefulWidget {
   /// Supply a node when something outside needs to move focus here; otherwise
   /// the widget creates and owns one.
   final FocusNode? focusNode;
+
+  /// For screens without a focus controller (the films list): the first
+  /// focusable claims initial focus itself. The player screen keeps setting
+  /// focus through its controller instead.
+  final bool autofocus;
 
   /// Consulted for keys this widget does not claim itself — directional
   /// navigation, typically.
@@ -76,6 +82,7 @@ class _FocusWrapperState extends State<FocusWrapper> {
   Widget build(BuildContext context) {
     return Focus(
       focusNode: _node,
+      autofocus: widget.autofocus,
       onKeyEvent: (_, event) {
         if (_isSubmit(event)) {
           widget.onTap();
