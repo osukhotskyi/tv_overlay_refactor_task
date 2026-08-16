@@ -43,7 +43,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PlayerBloc(source: widget.source, playback: _playback.service)..add(const PlayerStarted()),
+      create: (_) =>
+          PlayerBloc(source: widget.source, playback: _playback.service)
+            ..add(const PlayerStarted()),
       child: _PlayerView(videoSurface: _playback.surface),
     );
   }
@@ -64,28 +66,33 @@ class _PlayerView extends StatelessWidget {
       // several times a second, and this branch cares about three slow
       // fields only. Without it the whole body would rebuild every tick,
       // kept in check solely by `const TvOverlay()` canonicalisation.
-      body: BlocSelector<PlayerBloc, PlayerState, ({String? error, bool initialized, double aspectRatio})>(
-        selector: (state) => (
-          error: state.value.errorDescription,
-          initialized: state.value.initialized,
-          aspectRatio: state.value.aspectRatio,
-        ),
-        builder: (context, data) {
-          final error = data.error;
-          if (error != null) {
-            return _ErrorView(message: error);
-          }
+      body:
+          BlocSelector<
+            PlayerBloc,
+            PlayerState,
+            ({String? error, bool initialized, double aspectRatio})
+          >(
+            selector: (state) => (
+              error: state.value.errorDescription,
+              initialized: state.value.initialized,
+              aspectRatio: state.value.aspectRatio,
+            ),
+            builder: (context, data) {
+              final error = data.error;
+              if (error != null) {
+                return _ErrorView(message: error);
+              }
 
-          if (!data.initialized) {
-            return const _LoadingView();
-          }
+              if (!data.initialized) {
+                return const _LoadingView();
+              }
 
-          return _VideoWithOverlay(
-            aspectRatio: data.aspectRatio,
-            videoSurface: videoSurface,
-          );
-        },
-      ),
+              return _VideoWithOverlay(
+                aspectRatio: data.aspectRatio,
+                videoSurface: videoSurface,
+              );
+            },
+          ),
     );
   }
 }
