@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../../domain/entities/device_info.dart';
+import '../domain/entities/device_info.dart';
 
 /// Loads [DeviceInfo] once and shows the screen that matches the outcome.
 ///

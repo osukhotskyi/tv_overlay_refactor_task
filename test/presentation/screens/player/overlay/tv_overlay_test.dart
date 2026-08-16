@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tv_overlay_refactor_task/domain/entities/video_source.dart';
-import 'package:tv_overlay_refactor_task/presentation/player/view/player_screen.dart';
-import 'package:tv_overlay_refactor_task/presentation/tv_overlay/cubit/overlay_visibility_cubit.dart';
-import 'package:tv_overlay_refactor_task/presentation/tv_overlay/view/tv_overlay.dart';
+import 'package:tv_overlay_refactor_task/presentation/screens/player/player_screen.dart';
+import 'package:tv_overlay_refactor_task/presentation/screens/player/overlay/cubit/overlay_visibility_cubit.dart';
+import 'package:tv_overlay_refactor_task/presentation/screens/player/overlay/tv_overlay.dart';
 
-import '../../../fakes/fake_playback_service.dart';
+import '../../../../fakes/fake_playback_service.dart';
 
 /// Widget tests for the behaviours TASK.md requires, driven through real key
 /// events against the full player screen with a fake playback service.

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../domain/entities/player_value.dart';
-import '../../common/player_button.dart';
-import '../../player/bloc/player_bloc.dart';
-import '../cubit/overlay_visibility_cubit.dart';
-import '../focus/overlay_focus_controller.dart';
-import '../widgets/tv_bottom_overlay.dart';
+import '../../../../domain/entities/player_value.dart';
+import '../../../widgets/player_button.dart';
+import '../bloc/player_bloc.dart';
+import 'cubit/overlay_visibility_cubit.dart';
+import 'focus/overlay_focus_controller.dart';
+import 'tv_bottom_overlay.dart';
 
 /// The intro runs between these marks; `Skip intro` jumps to its end.
 const _introStart = Duration(seconds: 10);

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/utils/duration_format.dart';
-import '../../common/player_focus_decoration.dart';
+import '../../../../widgets/player_focus_decoration.dart';
+import '../../../../utils/duration_label.dart';
 
 /// How far one left/right press jumps.
 const _seekStep = Duration(seconds: 15);
@@ -111,7 +111,7 @@ class _Bar extends StatelessWidget {
 
     return Row(
       children: [
-        Text(formatDuration(position), style: _timeStyle),
+        Text(position.asTimeLabel, style: _timeStyle),
         const SizedBox(width: 16),
         Expanded(
           child: LinearProgressIndicator(
@@ -122,7 +122,7 @@ class _Bar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        Text(formatDuration(duration), style: _timeStyle),
+        Text(duration.asTimeLabel, style: _timeStyle),
       ],
     );
   }

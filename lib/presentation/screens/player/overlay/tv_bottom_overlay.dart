@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../common/player_button.dart';
-import '../../player/bloc/player_bloc.dart';
-import '../cubit/overlay_visibility_cubit.dart';
-import '../focus/overlay_focus_controller.dart';
-import 'overlay_progress_bar.dart';
+import '../../../widgets/player_button.dart';
+import '../bloc/player_bloc.dart';
+import 'cubit/overlay_visibility_cubit.dart';
+import 'focus/overlay_focus_controller.dart';
+import 'widgets/overlay_progress_bar.dart';
 
 class TvBottomOverlay extends StatelessWidget {
   const TvBottomOverlay({required this.focus, super.key});

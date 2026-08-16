@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../domain/entities/player_value.dart';
-import '../../../domain/entities/video_source.dart';
-import '../../../domain/services/playback_service.dart';
+import '../../../../domain/entities/player_value.dart';
+import '../../../../domain/entities/video_source.dart';
+import '../../../../domain/services/playback_service.dart';
 
 part 'player_event.dart';
 part 'player_state.dart';

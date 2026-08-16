@@ -1,6 +1,6 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tv_overlay_refactor_task/presentation/tv_overlay/cubit/overlay_visibility_cubit.dart';
+import 'package:tv_overlay_refactor_task/presentation/screens/player/overlay/cubit/overlay_visibility_cubit.dart';
 
 void main() {
   // The production delay; these tests assert the real behaviour, not a

@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/entities/video_source.dart';
 import '../../../domain/services/playback_service.dart';
-import '../../tv_overlay/cubit/overlay_visibility_cubit.dart';
-import '../../tv_overlay/view/tv_overlay.dart';
-import '../bloc/player_bloc.dart';
+import 'overlay/cubit/overlay_visibility_cubit.dart';
+import 'overlay/tv_overlay.dart';
+import 'bloc/player_bloc.dart';
 
 /// A playback service together with the widget that draws its video.
 ///

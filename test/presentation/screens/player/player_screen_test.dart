@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tv_overlay_refactor_task/domain/entities/video_source.dart';
-import 'package:tv_overlay_refactor_task/presentation/player/view/player_screen.dart';
+import 'package:tv_overlay_refactor_task/presentation/screens/player/player_screen.dart';
 
 import '../../../fakes/fake_playback_service.dart';
 

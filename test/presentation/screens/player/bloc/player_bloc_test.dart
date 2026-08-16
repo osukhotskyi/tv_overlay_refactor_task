@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tv_overlay_refactor_task/domain/entities/player_value.dart';
 import 'package:tv_overlay_refactor_task/domain/entities/video_source.dart';
-import 'package:tv_overlay_refactor_task/presentation/player/bloc/player_bloc.dart';
+import 'package:tv_overlay_refactor_task/presentation/screens/player/bloc/player_bloc.dart';
 
-import '../../../fakes/fake_playback_service.dart';
+import '../../../../fakes/fake_playback_service.dart';
 
 void main() {
   const source = VideoSource(url: 'https://example.test/a.m3u8', title: 'Film');

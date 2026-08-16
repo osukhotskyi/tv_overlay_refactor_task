@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../presentation/common/device_gate.dart';
-import '../presentation/common/unsupported_device_screen.dart';
-import '../presentation/player/view/player_screen.dart';
+import '../presentation/screens/player/player_screen.dart';
+import '../presentation/screens/unsupported_device/unsupported_device_screen.dart';
+import 'device_gate.dart';
 import '../services/device/device_info_service.dart';
 import '../services/playback/media_kit_playback_service.dart';
 import '../services/playback/media_kit_video_surface.dart';

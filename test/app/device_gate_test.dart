@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tv_overlay_refactor_task/domain/entities/device_info.dart';
-import 'package:tv_overlay_refactor_task/presentation/common/device_gate.dart';
+import 'package:tv_overlay_refactor_task/app/device_gate.dart';
 
 void main() {
   const tv = (isTv: true, isEmulator: false);
