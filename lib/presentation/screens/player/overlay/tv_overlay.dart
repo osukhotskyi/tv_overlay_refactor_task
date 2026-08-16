@@ -182,6 +182,7 @@ class _TopBar extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
             child: Row(
+              spacing: 12,
               children: [
                 PlayerButton(
                   focusNode: focus.back,
@@ -192,7 +193,6 @@ class _TopBar extends StatelessWidget {
                     child: Icon(Icons.arrow_back),
                   ),
                 ),
-                const SizedBox(width: 12),
                 Text(
                   data.title,
                   style: const TextStyle(

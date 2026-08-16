@@ -16,10 +16,12 @@ class TvBottomOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      spacing: 12,
       children: [
         FocusScope(
           node: focus.actions,
           child: Row(
+            spacing: 16,
             children: [
               BlocSelector<PlayerBloc, PlayerState, bool>(
                 selector: (state) => state.value.isPlaying,
@@ -43,7 +45,6 @@ class TvBottomOverlay extends StatelessWidget {
                 icon: Icons.subtitles,
                 onTap: () => _showDialog(context, 'Audio and subtitles'),
               ),
-              const SizedBox(width: 16),
               PlayerLabeledButton(
                 title: 'Settings',
                 icon: Icons.settings,
@@ -52,7 +53,6 @@ class TvBottomOverlay extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
         BlocSelector<
           PlayerBloc,
           PlayerState,

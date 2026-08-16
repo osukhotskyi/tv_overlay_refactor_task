@@ -65,7 +65,8 @@ class PlayerLabeledButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [Icon(icon), const SizedBox(width: 8), Text(title)],
+          spacing: 8,
+          children: [Icon(icon), Text(title)],
         ),
       ),
     );

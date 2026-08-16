@@ -110,9 +110,9 @@ class _Bar extends StatelessWidget {
         .toDouble();
 
     return Row(
+      spacing: 16,
       children: [
         Text(position.asTimeLabel, style: _timeStyle),
-        const SizedBox(width: 16),
         Expanded(
           child: LinearProgressIndicator(
             minHeight: 6,
@@ -121,7 +121,6 @@ class _Bar extends StatelessWidget {
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.redAccent),
           ),
         ),
-        const SizedBox(width: 16),
         Text(duration.asTimeLabel, style: _timeStyle),
       ],
     );
