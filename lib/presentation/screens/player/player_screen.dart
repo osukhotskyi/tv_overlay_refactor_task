@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/entities/video_source.dart';
 import '../../../domain/services/playback_service.dart';
+import 'bloc/player_bloc.dart';
 import 'overlay/cubit/overlay_visibility_cubit.dart';
 import 'overlay/tv_overlay.dart';
-import 'bloc/player_bloc.dart';
 
 /// A playback service together with the widget that draws its video.
 ///
@@ -43,19 +43,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          PlayerBloc(source: widget.source, playback: _playback.service)
-            ..add(const PlayerStarted()),
-      child: PlayerView(videoSurface: _playback.surface),
+      create: (_) => PlayerBloc(source: widget.source, playback: _playback.service)..add(const PlayerStarted()),
+      child: _PlayerView(videoSurface: _playback.surface),
     );
   }
 }
 
-/// Renders whatever the provided [PlayerBloc] reports. Kept separate from
-/// [PlayerScreen] so tests can supply their own bloc and surface.
-@visibleForTesting
-class PlayerView extends StatelessWidget {
-  const PlayerView({required this.videoSurface, super.key});
+/// Renders whatever the [PlayerBloc] above reports: the screen owns
+/// lifecycle and wiring, this owns layout.
+class _PlayerView extends StatelessWidget {
+  const _PlayerView({required this.videoSurface});
 
   final Widget videoSurface;
 
@@ -67,49 +64,81 @@ class PlayerView extends StatelessWidget {
       // several times a second, and this branch cares about three slow
       // fields only. Without it the whole body would rebuild every tick,
       // kept in check solely by `const TvOverlay()` canonicalisation.
-      body:
-          BlocSelector<
-            PlayerBloc,
-            PlayerState,
-            ({String? error, bool initialized, double aspectRatio})
-          >(
-            selector: (state) => (
-              error: state.value.errorDescription,
-              initialized: state.value.initialized,
-              aspectRatio: state.value.aspectRatio,
-            ),
-            builder: (context, data) {
-              final error = data.error;
-              if (error != null) {
-                return Center(child: Text(error));
-              }
+      body: BlocSelector<PlayerBloc, PlayerState, ({String? error, bool initialized, double aspectRatio})>(
+        selector: (state) => (
+          error: state.value.errorDescription,
+          initialized: state.value.initialized,
+          aspectRatio: state.value.aspectRatio,
+        ),
+        builder: (context, data) {
+          final error = data.error;
+          if (error != null) {
+            return _ErrorView(message: error);
+          }
 
-              if (!data.initialized) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          if (!data.initialized) {
+            return const _LoadingView();
+          }
 
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  Center(
-                    child: AspectRatio(
-                      aspectRatio: data.aspectRatio,
-                      child: videoSurface,
-                    ),
-                  ),
-                  BlocProvider(
-                    create: (context) {
-                      final player = context.read<PlayerBloc>();
-                      return OverlayVisibilityCubit(
-                        isPlaying: () => player.state.value.isPlaying,
-                      );
-                    },
-                    child: const TvOverlay(),
-                  ),
-                ],
-              );
-            },
-          ),
+          return _VideoWithOverlay(
+            aspectRatio: data.aspectRatio,
+            videoSurface: videoSurface,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ErrorView extends StatelessWidget {
+  const _ErrorView({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text(message));
+  }
+}
+
+class _LoadingView extends StatelessWidget {
+  const _LoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: CircularProgressIndicator());
+  }
+}
+
+class _VideoWithOverlay extends StatelessWidget {
+  const _VideoWithOverlay({
+    required this.aspectRatio,
+    required this.videoSurface,
+  });
+
+  /// The video's own proportions, reported by the stream; the screen's
+  /// proportions are handled by layout (Center + AspectRatio letterboxes).
+  final double aspectRatio;
+  final Widget videoSurface;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Center(
+          child: AspectRatio(aspectRatio: aspectRatio, child: videoSurface),
+        ),
+        BlocProvider(
+          create: (context) {
+            final player = context.read<PlayerBloc>();
+            return OverlayVisibilityCubit(
+              isPlaying: () => player.state.value.isPlaying,
+            );
+          },
+          child: const TvOverlay(),
+        ),
+      ],
     );
   }
 }
