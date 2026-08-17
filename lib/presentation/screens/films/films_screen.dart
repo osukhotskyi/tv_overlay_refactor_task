@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/entities/video_source.dart';
 import '../../utils/duration_label.dart';
-import '../../widgets/player_button.dart';
+import '../../widgets/tv_button.dart';
 
 /// The opening screen: pick a film, watch it.
 ///
@@ -68,7 +68,7 @@ class _FilmTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duration = film.duration;
-    return PlayerButton(
+    return TvButton(
       autofocus: autofocus,
       onPressed: onTap,
       child: Padding(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../widgets/player_focus_decoration.dart';
+import '../../../../widgets/tv_focus_decoration.dart';
 import '../../../../utils/duration_label.dart';
 
 /// How far one left/right press jumps.
@@ -85,7 +85,7 @@ class _OverlayProgressBarState extends State<OverlayProgressBar> {
     return FocusScope(
       node: widget.node,
       onKeyEvent: _onKeyEvent,
-      child: PlayerFocusDecoration(
+      child: TvFocusDecoration(
         hasFocus: widget.node.hasFocus,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),

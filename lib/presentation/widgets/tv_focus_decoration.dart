@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// The focus highlight shared by every control on the player screen.
-class PlayerFocusDecoration extends StatelessWidget {
-  const PlayerFocusDecoration({
+class TvFocusDecoration extends StatelessWidget {
+  const TvFocusDecoration({
     required this.hasFocus,
     required this.child,
     super.key,

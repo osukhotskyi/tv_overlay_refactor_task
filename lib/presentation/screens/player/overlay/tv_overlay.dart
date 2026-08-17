@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../domain/entities/player_value.dart';
-import '../../../widgets/player_button.dart';
+import '../../../widgets/tv_button.dart';
 import '../bloc/player_bloc.dart';
 import 'cubit/overlay_visibility_cubit.dart';
 import 'focus/overlay_focus_controller.dart';
@@ -184,7 +184,7 @@ class _TopBar extends StatelessWidget {
             child: Row(
               spacing: 12,
               children: [
-                PlayerButton(
+                TvButton(
                   focusNode: focus.back,
                   onDirectionalKey: focus.onBackKey,
                   onPressed: () => Navigator.of(context).maybePop(),
@@ -270,7 +270,7 @@ class _SkipIntroButton extends StatelessWidget {
         child: Positioned(
           left: 32,
           bottom: visible ? _aboveControls : _nearBottomEdge,
-          child: PlayerLabeledButton(
+          child: TvLabeledButton(
             focusNode: focus.skipIntro,
             onDirectionalKey: focus.onSkipIntroKey,
             title: 'Skip intro',

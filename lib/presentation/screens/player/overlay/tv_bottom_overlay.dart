@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../widgets/player_button.dart';
+import '../../../widgets/tv_button.dart';
 import '../bloc/player_bloc.dart';
 import 'cubit/overlay_visibility_cubit.dart';
 import 'focus/overlay_focus_controller.dart';
@@ -25,7 +25,7 @@ class TvBottomOverlay extends StatelessWidget {
             children: [
               BlocSelector<PlayerBloc, PlayerState, bool>(
                 selector: (state) => state.value.isPlaying,
-                builder: (context, isPlaying) => PlayerButton(
+                builder: (context, isPlaying) => TvButton(
                   focusNode: focus.playPause,
                   onPressed: () => context.read<PlayerBloc>().add(
                     const PlayerPlayPauseToggled(),
@@ -40,12 +40,12 @@ class TvBottomOverlay extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              PlayerLabeledButton(
+              TvLabeledButton(
                 title: 'Audio and subtitles',
                 icon: Icons.subtitles,
                 onTap: () => _showDialog(context, 'Audio and subtitles'),
               ),
-              PlayerLabeledButton(
+              TvLabeledButton(
                 title: 'Settings',
                 icon: Icons.settings,
                 onTap: () => _showDialog(context, 'Settings'),

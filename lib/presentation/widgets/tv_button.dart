@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 import 'focus_wrapper.dart';
-import 'player_focus_decoration.dart';
+import 'tv_focus_decoration.dart';
 
 /// A focusable button wearing the standard highlight.
 ///
 /// Composed from [FocusWrapper] rather than repeating its focus and key
 /// handling, which is what the previous pair of near-identical button
 /// widgets did.
-class PlayerButton extends StatelessWidget {
-  const PlayerButton({
+class TvButton extends StatelessWidget {
+  const TvButton({
     required this.onPressed,
     required this.child,
     this.focusNode,
@@ -36,14 +36,14 @@ class PlayerButton extends StatelessWidget {
       onDirectionalKey: onDirectionalKey,
       onTap: onPressed,
       builder: (_, hasFocus, _) =>
-          PlayerFocusDecoration(hasFocus: hasFocus, child: child),
+          TvFocusDecoration(hasFocus: hasFocus, child: child),
     );
   }
 }
 
-/// A [PlayerButton] showing an icon next to a caption.
-class PlayerLabeledButton extends StatelessWidget {
-  const PlayerLabeledButton({
+/// A [TvButton] showing an icon next to a caption.
+class TvLabeledButton extends StatelessWidget {
+  const TvLabeledButton({
     required this.title,
     required this.icon,
     required this.onTap,
@@ -62,7 +62,7 @@ class PlayerLabeledButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PlayerButton(
+    return TvButton(
       focusNode: focusNode,
       onDirectionalKey: onDirectionalKey,
       onPressed: onTap,
