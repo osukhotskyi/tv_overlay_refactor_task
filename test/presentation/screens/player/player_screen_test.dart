@@ -68,6 +68,31 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('hiding the app pauses playback through the lifecycle listener', (
+    tester,
+  ) async {
+    final playback = await pumpPlayer(tester);
+    await tester.pump();
+    await tester.pump();
+    expect(playback.value.isPlaying, isTrue);
+
+    // AppLifecycleListener enforces legal transitions; walk the real path.
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    await tester.pump();
+
+    expect(playback.calls, contains('pause'));
+    expect(playback.value.isPlaying, isFalse);
+
+    // Coming back does not auto-resume a viewing pause.
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(playback.value.isPlaying, isFalse);
+
+    await unmount(tester);
+  });
+
   testWidgets('shows the error text instead of the player', (tester) async {
     final playback = await pumpPlayer(tester);
     await tester.pump();

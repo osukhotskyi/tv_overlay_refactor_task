@@ -33,19 +33,39 @@ class PlayerScreen extends StatefulWidget {
 
 class _PlayerScreenState extends State<PlayerScreen> {
   late final Playback _playback = widget.createPlayback(widget.source);
+  late final PlayerBloc _bloc = PlayerBloc(
+    source: widget.source,
+    playback: _playback.service,
+  )..add(const PlayerStarted());
+
+  /// The background policy is owned here, not left to the Video widget's
+  /// defaults: the widget only exists once the player is initialized, so it
+  /// cannot cover the loading window (Home while the spinner is up).
+  AppLifecycleListener? _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onHide: () => _bloc.add(const PlayerBackgrounded()),
+      onShow: () => _bloc.add(const PlayerForegrounded()),
+    );
+  }
 
   @override
   void dispose() {
+    _lifecycle?.dispose();
+    // The bloc goes first: it cancels its subscription to the service's
+    // stream before the service closes it.
+    _bloc.close();
     _playback.service.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          PlayerBloc(source: widget.source, playback: _playback.service)
-            ..add(const PlayerStarted()),
+    return BlocProvider.value(
+      value: _bloc,
       child: _PlayerView(videoSurface: _playback.surface),
     );
   }

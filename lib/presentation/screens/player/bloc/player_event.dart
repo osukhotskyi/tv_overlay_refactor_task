@@ -32,3 +32,14 @@ final class PlayerSeekedBy extends PlayerEvent {
 
   final Duration offset;
 }
+
+/// The app went to the background; nothing may keep sounding there.
+final class PlayerBackgrounded extends PlayerEvent {
+  const PlayerBackgrounded();
+}
+
+/// The app is visible again. Deliberately does not resume a viewing pause —
+/// only a start deferred by backgrounding fires now.
+final class PlayerForegrounded extends PlayerEvent {
+  const PlayerForegrounded();
+}

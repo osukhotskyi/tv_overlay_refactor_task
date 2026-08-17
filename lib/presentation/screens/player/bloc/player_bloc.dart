@@ -29,6 +29,8 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     on<PlayerPlayPauseToggled>(_onPlayPauseToggled);
     on<PlayerSeeked>(_onSeeked);
     on<PlayerSeekedBy>(_onSeekedBy);
+    on<PlayerBackgrounded>(_onBackgrounded);
+    on<PlayerForegrounded>(_onForegrounded);
 
     _changes = _playback.changes.listen(
       (value) => add(PlayerValueChanged(value)),
@@ -38,13 +40,25 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   final PlaybackService _playback;
   late final StreamSubscription<PlayerValue> _changes;
 
+  /// The background policy lives here, not in a widget: the video surface
+  /// mounts only once the player is initialized, so a widget-side observer
+  /// misses everything that happens during the loading window.
+  bool _inBackground = false;
+  bool _startDeferredByBackground = false;
+
   Future<void> _onStarted(
     PlayerStarted event,
     Emitter<PlayerState> emit,
   ) async {
     try {
       await _playback.initialize();
-      await _playback.play();
+      if (_inBackground) {
+        // Home was pressed while the spinner was up. Starting now would
+        // play sound behind the launcher; start when the app is back.
+        _startDeferredByBackground = true;
+      } else {
+        await _playback.play();
+      }
       emit(state.copyWith(value: _playback.value));
     } catch (error) {
       // The service only reports errors its player noticed; a throw out of
@@ -82,6 +96,27 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
 
   Future<void> _onSeekedBy(PlayerSeekedBy event, Emitter<PlayerState> emit) {
     return _playback.seekBy(event.offset);
+  }
+
+  Future<void> _onBackgrounded(
+    PlayerBackgrounded event,
+    Emitter<PlayerState> emit,
+  ) async {
+    _inBackground = true;
+    if (state.value.isPlaying) await _playback.pause();
+  }
+
+  Future<void> _onForegrounded(
+    PlayerForegrounded event,
+    Emitter<PlayerState> emit,
+  ) async {
+    _inBackground = false;
+    // A viewing pause stays a pause — resuming is the viewer's call. Only a
+    // start that backgrounding deferred fires now.
+    if (_startDeferredByBackground) {
+      _startDeferredByBackground = false;
+      await _playback.play();
+    }
   }
 
   @override

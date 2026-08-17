@@ -129,6 +129,56 @@ void main() {
     expect(playback.calls, contains('pause'));
   });
 
+  test('backgrounding pauses playback', () async {
+    bloc.add(const PlayerStarted());
+    await pumpEventQueue();
+    playback.calls.clear();
+
+    bloc.add(const PlayerBackgrounded());
+    await pumpEventQueue();
+
+    expect(playback.calls, ['pause']);
+    expect(bloc.state.value.isPlaying, isFalse);
+  });
+
+  test('returning to the foreground does not resume a viewing pause', () async {
+    bloc.add(const PlayerStarted());
+    // Settle first: without this the background flag lands before play()
+    // and the scenario silently becomes the deferred-start one.
+    await pumpEventQueue();
+    bloc.add(const PlayerBackgrounded());
+    await pumpEventQueue();
+
+    bloc.add(const PlayerForegrounded());
+    await pumpEventQueue();
+
+    // The viewer decides when to continue; only [initialize, play, pause].
+    expect(playback.calls.where((c) => c == 'play').length, 1);
+    expect(bloc.state.value.isPlaying, isFalse);
+  });
+
+  test('a start while backgrounded is deferred, not silently played', () async {
+    bloc.add(const PlayerBackgrounded());
+    bloc.add(const PlayerStarted());
+    await pumpEventQueue();
+
+    // Home during the spinner: sound must not start behind the launcher.
+    expect(playback.calls, isNot(contains('play')));
+    expect(bloc.state.value.isPlaying, isFalse);
+  });
+
+  test('the deferred start fires once the app is back', () async {
+    bloc.add(const PlayerBackgrounded());
+    bloc.add(const PlayerStarted());
+    await pumpEventQueue();
+
+    bloc.add(const PlayerForegrounded());
+    await pumpEventQueue();
+
+    expect(playback.calls, contains('play'));
+    expect(bloc.state.value.isPlaying, isTrue);
+  });
+
   test('does not own the service: closing the bloc leaves it alive', () async {
     await bloc.close();
 

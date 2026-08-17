@@ -18,6 +18,14 @@ class MediaKitVideoSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Video(controller: controller, controls: NoVideoControls);
+    return Video(
+      controller: controller,
+      controls: NoVideoControls,
+      // The app owns its background policy (see PlayerBackgrounded in the
+      // player bloc); the widget's built-in auto-pause is switched off so
+      // the policy has exactly one owner.
+      pauseUponEnteringBackgroundMode: false,
+      resumeUponEnteringForegroundMode: false,
+    );
   }
 }
