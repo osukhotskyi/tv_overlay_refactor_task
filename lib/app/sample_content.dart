@@ -2,14 +2,16 @@ import '../domain/entities/video_source.dart';
 
 /// Hardcoded catalogue for the task; a real app would fetch this from a
 /// backend together with the stream URLs. Titles and durations are catalogue
-/// metadata on purpose — HLS carries no reliable presentation title, and
-/// probing playlists for durations costs a network round-trip per film.
+/// metadata on purpose — HLS carries no presentation title, and probing
+/// playlists for durations costs a network round-trip per film. The durations
+/// below were computed once by summing each variant's `#EXTINF` entries.
 ///
-/// Both URLs are single HLS variants so playback works everywhere, including
-/// the Android emulator: a master playlist stalls the emulated H.264 decoder
-/// when combined with the `mediacodec_embed` workaround for media-kit#1343.
-/// On a real device prefer master playlists — they enable adaptive quality
-/// (for the first film: .../movie_hls/master.m3u8). See README, «Запуск».
+/// Every URL is a single HLS variant (not a master playlist) so playback
+/// works everywhere, including the Android emulator: a master playlist
+/// stalls the emulated H.264 decoder when combined with the
+/// `mediacodec_embed` workaround for media-kit#1343. On a real device prefer
+/// master playlists — they enable adaptive quality (for the first film:
+/// .../movie_hls/master.m3u8). See README, «Запуск».
 const sampleCatalogue = <VideoSource>[
   VideoSource(
     url:
@@ -24,5 +26,20 @@ const sampleCatalogue = <VideoSource>[
         'url_0/193039199_mp4_h264_aac_hd_7.m3u8',
     title: 'Big Buck Bunny',
     duration: Duration(minutes: 10, seconds: 34),
+  ),
+  VideoSource(
+    url:
+        'https://demo.unified-streaming.com/k8s/features/stable/video/'
+        'tears-of-steel/tears-of-steel.ism/'
+        'tears-of-steel-audio_eng=128002-video_eng=1001000.m3u8',
+    title: 'Tears of Steel',
+    duration: Duration(minutes: 12, seconds: 14),
+  ),
+  VideoSource(
+    url:
+        'https://sample.vodobox.net/skate_phantom_flex_4k/'
+        'high/skate_phantom_flex_4k_788_360p.m3u8',
+    title: 'Skate Phantom Flex 4K',
+    duration: Duration(minutes: 2, seconds: 21),
   ),
 ];
